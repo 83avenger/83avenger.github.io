@@ -178,8 +178,6 @@
 
   .metric-cell.r::before { background: var(--red); }
   .metric-cell.r:hover   { background: rgba(255,68,102,0.04); }
-  .metric-cell.p::before { background: var(--purple); }
-  .metric-cell.p:hover   { background: rgba(168,85,247,0.04); }
 
   .badge {
     font-size: 10px; font-weight: 600;
@@ -658,104 +656,12 @@
 
   <div class="divider"></div>
 
-  <!-- ══ Section 3: BCDR & DR Design ══ -->
+  <!-- ══ Section 3: Customer Support & Lifecycle ══ -->
   <div class="sec-header">
     <span class="sec-prompt">ayub@secops<span>:~$</span> cat</span>
-    <span class="sec-title">BCDR &amp; Disaster Recovery Design</span>
+    <span class="sec-title">Customer Support &amp; Lifecycle Management</span>
     <div class="sec-line"></div>
   </div>
-
-  <!-- BCDR Metrics -->
-  <div class="metrics-row" style="border-bottom:1px solid var(--border)">
-    <div class="metric-cell g">
-      <div class="metric-val g">500+</div>
-      <div class="metric-lbl">TB Data<br>Protected</div>
-    </div>
-    <div class="metric-cell c">
-      <div class="metric-val c">99.98%</div>
-      <div class="metric-lbl">Backup Success<br>Rate Achieved</div>
-    </div>
-    <div class="metric-cell a">
-      <div class="metric-val a">&lt;4h</div>
-      <div class="metric-lbl">RTO Achieved<br>Across DR Sites</div>
-    </div>
-    <div class="metric-cell g">
-      <div class="metric-val g">Zero</div>
-      <div class="metric-lbl">Data Loss<br>During DR Tests</div>
-    </div>
-  </div>
-
-  <!-- BCDR Detail Columns -->
-  <div class="detail-row c2" style="border-bottom:1px solid var(--border)">
-
-    <div class="dcol c-c">
-      <div class="dcol-head">
-        <div class="dcol-icon c">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-          </svg>
-        </div>
-        <div class="dcol-title c">DR Design &amp;<br>Implementation</div>
-      </div>
-      <ul class="dcol-list">
-        <li>Designed and implemented end-to-end BCDR architectures for enterprise and government environments</li>
-        <li>Defined RTO / RPO targets and validated through scheduled DR drills and failover testing</li>
-        <li>Architected multi-tier backup strategies — disk, tape, and cloud — with deduplication and compression</li>
-        <li>Deployed Fibre Channel SAN fabrics for high-speed backup and replication data paths</li>
-        <li>Delivered Active/Passive DR site configurations with automated failover runbooks</li>
-      </ul>
-    </div>
-
-    <div class="dcol c-a">
-      <div class="dcol-head">
-        <div class="dcol-icon a">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#ffb300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
-            <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
-          </svg>
-        </div>
-        <div class="dcol-title a">Platforms &amp;<br>Storage Technologies</div>
-      </div>
-      <ul class="dcol-list">
-        <li><span style="color:var(--cyan)">Backup:</span> Dell EMC Avamar, IDPA Data Domain, Commvault</li>
-        <li><span style="color:var(--cyan)">Storage:</span> IBM DS4700, V3700, DS Systems &middot; EMC VMAX &middot; Huawei OceanStor V5000 / V6000</li>
-        <li><span style="color:var(--cyan)">Tape / Archive:</span> Overland TapeLibrary &middot; IBM TotalStorage</li>
-        <li><span style="color:var(--cyan)">Fabric:</span> Fibre Channel Switch — zoning, WWPN mapping &amp; LUN masking</li>
-        <li><span style="color:var(--cyan)">Protocol:</span> FC, iSCSI, NFS — multi-path IO configuration &amp; path failover</li>
-      </ul>
-    </div>
-
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- ══ Section 4: Customer Support & Lifecycle ══ -->
-  <div class="sec-header">
-    <span class="sec-prompt">ayub@secops<span>:~$</span> cat</span>
-    <span class="sec-title">Customer Support, BCDR Specialist &amp; Lifecycle Management</span>
-    <div class="sec-line"></div>
-  </div>
-  <!-- BCDR Highlight Metrics -->
-  <div class="metrics-row" style="border-bottom:1px solid var(--border)">
-    <div class="metric-cell p">
-      <div class="metric-val p">8+</div>
-      <div class="metric-lbl">Years BCDR<br>Specialist Experience</div>
-    </div>
-    <div class="metric-cell c">
-      <div class="metric-val c">15+</div>
-      <div class="metric-lbl">DR Drills<br>Successfully Executed</div>
-    </div>
-    <div class="metric-cell g">
-      <div class="metric-val g">3</div>
-      <div class="metric-lbl">Backup Tiers<br>Disk · Tape · Cloud</div>
-    </div>
-    <div class="metric-cell a">
-      <div class="metric-val a">RPO &lt;1h</div>
-      <div class="metric-lbl">Recovery Point<br>Objective Met</div>
-    </div>
-  </div>
-
   <div class="band">
     <div class="band-icon-wrap purple">
       <svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -763,7 +669,7 @@
       </svg>
     </div>
     <div class="band-body purple">
-      <p>Trusted technical anchor and BCDR specialist for enterprise clients — managing escalations, resolving complex infrastructure issues, maintaining resolution documentation, and delivering continuous optimisation recommendations driven by platform analytics and performance data.</p>
+      <p>Trusted technical anchor for enterprise clients — managing escalations, resolving complex infrastructure issues, maintaining resolution documentation, and delivering continuous optimisation recommendations driven by platform analytics and performance data.</p>
     </div>
   </div>
 
