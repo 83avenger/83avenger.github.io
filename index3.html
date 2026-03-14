@@ -106,6 +106,7 @@
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.5px;
+    white-space: nowrap;
   }
 
   .sec-prompt span { color: var(--cyan); }
@@ -442,11 +443,6 @@
   ════════════════════════════════ */
   @media (max-width: 768px) {
 
-    html, body {
-      overflow-x: hidden;
-      width: 100%;
-    }
-
     body {
       padding: 0;
       align-items: stretch;
@@ -454,7 +450,6 @@
 
     .wrapper {
       max-width: 100%;
-      overflow-x: hidden;
     }
 
     .terminal {
@@ -462,53 +457,39 @@
       border-left: none;
       border-right: none;
       box-shadow: none;
-      overflow-x: hidden;
-      width: 100%;
     }
 
-    /* Terminal bar */
+    /* Terminal bar — hide title, keep dots */
     .terminal-bar {
       padding: 10px 14px;
     }
     .terminal-title {
       font-size: 9px;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 160px;
     }
 
-    /* Section headers — key fix: allow wrapping, no nowrap */
+    /* Section headers — compact */
     .sec-header {
       padding: 9px 14px;
-      gap: 6px;
+      gap: 7px;
       flex-wrap: wrap;
     }
-    .sec-prompt {
-      font-size: 10px;
-      white-space: normal;
-      flex-shrink: 0;
-    }
-    .sec-title {
-      font-size: 9px;
-      letter-spacing: 1.4px;
-      white-space: normal;
-      word-break: break-word;
-    }
-    .sec-line { display: none; }
+    .sec-prompt { font-size: 10px; }
+    .sec-title  { font-size: 9px; letter-spacing: 1.8px; }
+    .sec-line   { display: none; }
 
     /* ── 4-col metrics → 2×2 grid ── */
     .metrics-row {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      width: 100%;
+      grid-template-columns: repeat(2, 1fr);
     }
     .metric-cell {
-      padding: 16px 8px 14px;
+      padding: 18px 12px 16px;
       border-bottom: 1px solid var(--border);
-      min-width: 0;
-      overflow: hidden;
     }
+    /* remove right border on 2nd col so 4th cell has no orphan border */
     .metrics-row .metric-cell:nth-child(2),
     .metrics-row .metric-cell:nth-child(4) {
       border-right: none;
@@ -518,52 +499,49 @@
       border-bottom: none;
     }
 
-    .metric-val       { font-size: 24px; letter-spacing: -0.5px; }
-    .metric-val.r     { font-size: 18px; }
-    .metric-lbl       { font-size: 9px; }
+    .metric-val       { font-size: 26px; }
+    .metric-val.r     { font-size: 20px; }
+    .metric-lbl       { font-size: 9.5px; }
 
     /* ── One-liner bands ── */
     .band {
-      padding: 14px;
-      gap: 10px;
+      padding: 14px 14px;
+      gap: 12px;
     }
-    .band-icon-wrap   { width: 28px; height: 28px; flex-shrink: 0; }
+    .band-icon-wrap { width: 28px; height: 28px; }
     .band-body p,
-    .band-body ul li  { font-size: 11px; }
+    .band-body ul li { font-size: 11px; }
 
     /* ── 2-col / 3-col detail → single col ── */
     .detail-row.c2,
     .detail-row.c3 {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: 1fr;
     }
     .dcol {
       padding: 16px 14px 18px;
       border-right: none;
       border-bottom: 1px solid var(--border);
-      min-width: 0;
     }
-    .dcol:last-child  { border-bottom: none; }
-    .dcol-title       { font-size: 10px; }
-    .dcol-list li     { font-size: 10.5px; }
+    .dcol:last-child { border-bottom: none; }
+    .dcol-title { font-size: 10px; }
+    .dcol-list li { font-size: 10.5px; }
 
-    /* ── Cyber badges ── */
+    /* ── Cyber badges — wrap tighter ── */
     .cyber-badges {
       padding: 12px 14px !important;
-      gap: 7px !important;
-      flex-wrap: wrap !important;
+      gap: 8px !important;
     }
     .badge { font-size: 9px; padding: 3px 8px; }
 
     /* ── Connect section ── */
-    .connect-band   { padding: 16px 14px; gap: 14px; }
-    .connect-intro  { font-size: 11px; }
-    .connect-links  { gap: 8px; flex-wrap: wrap; }
+    .connect-band { padding: 16px 14px; gap: 14px; }
+    .connect-intro { font-size: 11px; }
+    .connect-links { gap: 8px; }
     .clink {
       font-size: 10px;
-      padding: 8px 12px;
+      padding: 7px 12px;
       flex: 1 1 calc(50% - 8px);
       justify-content: center;
-      min-width: 0;
     }
 
     /* ── Footer ── */
@@ -572,18 +550,17 @@
       flex-wrap: wrap;
       gap: 4px;
     }
-    .footer-prompt,
-    .footer-text,
+    .footer-prompt { font-size: 10px; }
+    .footer-text   { font-size: 10px; }
     .footer-cursor { font-size: 10px; }
   }
 
   /* Extra small screens */
   @media (max-width: 400px) {
-    .metric-val   { font-size: 20px; }
-    .metric-val.r { font-size: 16px; }
+    .metric-val     { font-size: 22px; }
+    .metric-val.r   { font-size: 17px; }
     .terminal-title { display: none; }
-    .clink { flex: 1 1 100%; }
-    .sec-prompt { font-size: 9px; }
+    .clink          { flex: 1 1 100%; }
   }
 </style>
 </head>
@@ -841,7 +818,7 @@
   <div class="connect-band">
     <p class="connect-intro">Open to <span class="hi-g">Presales Engineering</span>, <span class="hi-c">Solutions Architecture</span>, and <span class="hi-a">Senior Infrastructure &amp; Security</span> opportunities across the UAE and beyond.</p>
     <div class="connect-links">
-      <a href="/cdn-cgi/l/email-protection#b78f84d6c1d2d9d0d2c5f7d0dad6dedb99d4d8da" class="clink email">
+      <a href="mailto:83avenger@gmail.com" class="clink email">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Email
       </a>
@@ -863,4 +840,5 @@
   <!-- ══ Footer ══ -->
   <div class="footer">
     <span class="footer-prompt">ayub@secops<span>:~$</span>&nbsp;</span>
-    <span class="footer-text">Designed with <span class="diamond">◆</span> by Ayub &nbsp;|&nbsp; © 2
+    <span class="footer-text">Designed with <span class="diamond">◆</span> by Ayub &nbsp;|&nbsp; © 2026</span>
+    <span class="footer-cursor"
