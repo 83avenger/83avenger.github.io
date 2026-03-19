@@ -7,46 +7,74 @@
 <style>
 :root{--navy:#3B0764;--accent:#7C3AED;--green:#059669;--amber:#D97706;--red:#DC2626;--light:#F5F3FF;--border:#DDD6FE;--text:#111827;--gray:#6B7280;--white:#fff;--bg:#F5F3FF;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
-.hdr{background:linear-gradient(135deg,#2E1065 0%,#4C1D95 100%);color:#fff;padding:16px 22px;}
-.hdr h1{font-size:17px;font-weight:700;margin-bottom:4px;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#2E1065 0%,#4C1D95 100%);color:#fff;padding:14px 16px;}
+.hdr h1{font-size:15px;font-weight:700;margin-bottom:3px;line-height:1.3;}
 .hdr p{color:#C4B5FD;font-size:11px;margin-bottom:8px;}
-.chips{display:flex;gap:6px;flex-wrap:wrap;}
-.chip{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:10px;color:#DDD6FE;}
-.tab-bar{background:#3B0764;display:flex;overflow-x:auto;border-bottom:2px solid rgba(255,255,255,0.1);}
-.tb{padding:10px 18px;cursor:pointer;font-size:12px;font-weight:600;color:#C4B5FD;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s;}
+.chips{display:flex;gap:5px;flex-wrap:wrap;}
+.chip{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 9px;font-size:10px;color:#DDD6FE;}
+
+/* TABS — horizontal scroll, touch-friendly */
+.tab-bar{background:#3B0764;display:flex;overflow-x:auto;border-bottom:2px solid rgba(255,255,255,0.1);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tb{padding:11px 14px;cursor:pointer;font-size:12px;font-weight:600;color:#C4B5FD;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;transition:all .15s;}
 .tb:hover{color:#fff;background:rgba(255,255,255,0.08);}
 .tb.active{color:#E9D5FF;border-bottom-color:#A78BFA;}
-.layout{display:flex;height:calc(100vh - 120px);}
-.sb{width:230px;min-width:230px;background:#fff;border-right:1px solid var(--border);overflow-y:auto;}
-.sb-item{padding:9px 12px 9px 16px;cursor:pointer;border-bottom:1px solid #F5F3FF;font-size:12px;line-height:1.4;display:flex;align-items:flex-start;gap:8px;transition:background .12s;}
+
+/* PROGRESS BAR */
+.prog-bar-wrap{background:var(--light);border-bottom:1px solid var(--border);padding:8px 14px;font-size:11px;color:var(--gray);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pbar{flex:1;min-width:80px;max-width:160px;height:5px;background:var(--border);border-radius:3px;}
+.pfill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
+
+/* DESKTOP LAYOUT — sidebar + content side by side */
+.layout{display:flex;}
+.sb{width:220px;min-width:220px;background:#fff;border-right:1px solid var(--border);min-height:calc(100vh - 140px);}
+.main-wrap{flex:1;min-width:0;}
+.content{padding:16px;}
+
+/* SIDEBAR ITEMS */
+.sb-item{padding:10px 12px 10px 14px;cursor:pointer;border-bottom:1px solid #F5F3FF;font-size:13px;line-height:1.4;display:flex;align-items:flex-start;gap:8px;transition:background .12s;}
 .sb-item:hover{background:var(--light);}
 .sb-item.active{background:#EDE9FE;border-left:3px solid var(--accent);color:var(--accent);font-weight:600;}
 .sb-item.done .sb-label::before{content:"✓ ";color:var(--green);font-weight:700;}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
 .p1{background:var(--red)}.p2{background:var(--amber)}.p3{background:var(--green)}.p4{background:#7C3AED}
-.main-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.prog-bar-wrap{background:var(--light);border-bottom:1px solid var(--border);padding:7px 16px;font-size:11px;color:var(--gray);display:flex;align-items:center;gap:10px;}
-.pbar{flex:1;max-width:180px;height:5px;background:var(--border);border-radius:3px;}
-.pfill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
-.content{flex:1;overflow-y:auto;padding:18px 22px;}
-.empty{text-align:center;padding:60px;color:var(--gray);}
+
+/* MOBILE SECTION PICKER — replaces sidebar on small screens */
+.mob-picker{display:none;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);}
+.mob-picker select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:#fff;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237C3AED' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 20px;color:var(--gray);}
 .empty p{font-size:15px;}
-.card{background:#fff;border:1px solid var(--border);border-radius:9px;padding:20px;margin-bottom:14px;}
-.card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border);}
-.mark-btn{float:right;padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:11px;color:var(--gray);font-weight:600;}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:9px;padding:16px;margin-bottom:14px;}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);line-height:1.4;}
+
+/* MARK BUTTON */
+.mark-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.mark-btn{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;color:var(--gray);font-weight:600;white-space:nowrap;}
 .mark-btn:hover{background:#D1FAE5;border-color:var(--green);color:var(--green);}
 .mark-btn.done{background:#D1FAE5;border-color:var(--green);color:var(--green);}
-.pri-label{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;margin-bottom:12px;}
+
+/* PRIORITY LABEL */
+.pri-label{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:10px;}
 .pri-p1{background:#FEE2E2;color:var(--red);}
 .pri-p2{background:#FEF3C7;color:var(--amber);}
 .pri-p3{background:#D1FAE5;color:var(--green);}
 .pri-p4{background:#EDE9FE;color:var(--accent);}
+
+/* CODE BLOCKS */
 .cmd{background:#0F1923;border-radius:7px;padding:12px 14px;margin:8px 0;position:relative;}
-.cmd pre{color:#E2E8F0;font-family:'Consolas','Courier New',monospace;font-size:11px;line-height:1.7;white-space:pre-wrap;word-break:break-all;}
+.cmd pre{color:#E2E8F0;font-family:'Consolas','Courier New',monospace;font-size:11px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
 .cmd .c{color:#4B6280;font-style:italic;}
-.cpbtn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#94A3B8;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10px;}
+.cpbtn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#94A3B8;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;}
 .cpbtn:hover{background:rgba(255,255,255,0.2);color:#fff;}
+
+/* ALERTS */
 .alert{border-radius:8px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;align-items:flex-start;}
 .alert.red{background:#FEE2E2;border:1px solid #FECACA;}
 .alert.amber{background:#FEF3C7;border:1px solid #FDE68A;}
@@ -56,47 +84,101 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--te
 .alert h4{font-size:12px;font-weight:700;margin-bottom:4px;}
 .alert p,.alert li{font-size:12px;line-height:1.6;}
 .alert ul{padding-left:16px;}
+
+/* STEP LIST */
 .step-list{counter-reset:steps;list-style:none;padding:0;margin:10px 0;}
-.step-list li{counter-increment:steps;padding:8px 0 8px 36px;border-bottom:1px solid #F1F5F9;font-size:12px;line-height:1.6;position:relative;}
-.step-list li:before{content:counter(steps);position:absolute;left:0;top:8px;width:22px;height:22px;background:var(--accent);color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;}
+.step-list li{counter-increment:steps;padding:10px 0 10px 36px;border-bottom:1px solid #F1F5F9;font-size:13px;line-height:1.6;position:relative;}
+.step-list li:before{content:counter(steps);position:absolute;left:0;top:10px;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .step-list li:last-child{border-bottom:none;}
-.tbl{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0;}
-.tbl th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-size:11px;}
-.tbl td{padding:7px 10px;border-bottom:1px solid var(--border);}
+
+/* TABLES — scrollable on mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:420px;}
+.tbl th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:11px;white-space:nowrap;}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
 .tbl tr:nth-child(even) td{background:var(--light);}
 .tbl .crit{color:var(--red);font-weight:700;}
 .tbl .warn{color:var(--amber);font-weight:600;}
 .tbl .ok{color:var(--green);font-weight:600;}
-.note{background:#FFF7ED;border:1px solid #FED7AA;border-radius:7px;padding:10px 14px;font-size:12px;color:#92400E;margin:10px 0;}
+
+/* NOTE */
+.note{background:#FFF7ED;border:1px solid #FED7AA;border-radius:7px;padding:10px 14px;font-size:12px;color:#92400E;margin:10px 0;line-height:1.6;}
 .note strong{display:block;margin-bottom:3px;}
-.section-lbl{display:inline-block;background:#EDE9FE;color:var(--accent);border-radius:5px;padding:2px 10px;font-size:10px;font-weight:700;margin-bottom:10px;}
+
+/* ── MOBILE BREAKPOINT ── */
+@media (max-width: 700px) {
+  body{font-size:14px;}
+
+  /* Header — compact */
+  .hdr{padding:12px 14px;}
+  .hdr h1{font-size:14px;}
+  .chips{display:none;} /* Hide chips on mobile to save space */
+
+  /* Tabs — bigger tap targets */
+  .tb{padding:12px 14px;font-size:12px;}
+
+  /* Hide desktop sidebar */
+  .sb{display:none;}
+
+  /* Show mobile section picker */
+  .mob-picker{display:block;}
+
+  /* Full-width content */
+  .layout{flex-direction:column;}
+  .main-wrap{width:100%;}
+  .content{padding:12px;}
+
+  /* Card — reduce padding */
+  .card{padding:14px;}
+  .card-title{font-size:14px;}
+
+  /* Code blocks — bigger font on mobile for readability */
+  .cmd pre{font-size:12px;line-height:1.6;}
+
+  /* Tables always scrollable */
+  .tbl-wrap{margin:8px -4px;padding:0 4px;}
+
+  /* Step list — more padding for touch */
+  .step-list li{padding:12px 0 12px 36px;font-size:13px;}
+
+  /* Alert */
+  .alert{flex-direction:column;gap:6px;}
+
+  /* Progress bar */
+  .prog-bar-wrap{padding:8px 12px;}
+  .pbar{max-width:100px;}
+}
 </style>
 </head>
 <body>
 <div class="hdr">
   <h1>⚡ RE Routine — Dell PowerEdge XE9680 A100 Cluster</h1>
-  <p>iDRAC9 · Dell DSU · SupportAssist · OME · PCIe · PSU · SOL · Lifecycle Controller</p>
+  <p>iDRAC9 · Dell DSU · SupportAssist · OME · PCIe · PSU · SOL · Network · Storage · Backup</p>
   <div class="chips">
     <span class="chip">3× Dell XE9680</span>
     <span class="chip">24× A100 SXM4 80GB</span>
     <span class="chip">iDRAC9 + Dell DSU</span>
-    <span class="chip">XE9680-Specific Procedures Only</span>
     <span class="chip">Mohammed Ayub — Abu Dhabi, UAE</span>
   </div>
 </div>
 <div class="tab-bar" id="tabbar"></div>
+<div class="prog-bar-wrap">
+  <span>Reviewed: <strong id="dc">0</strong> / <strong id="tc">0</strong></span>
+  <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
+  <span id="pp">0%</span>
+</div>
+<div class="mob-picker">
+  <select id="mob-select" onchange="showSec(this.value)">
+    <option value="">— Select a section —</option>
+  </select>
+</div>
 <div class="layout">
   <div class="sb" id="sb"></div>
   <div class="main-wrap">
-    <div class="prog-bar-wrap">
-      <span>Reviewed: <strong id="dc">0</strong> / <strong id="tc">0</strong></span>
-      <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
-      <span id="pp">0%</span>
-    </div>
     <div class="content" id="content">
       <div class="empty">
-        <p>⚡ Select a section from the sidebar</p>
-        <p style="font-size:12px;margin-top:8px;color:var(--gray)">XE9680-specific procedures — iDRAC9, DSU, SupportAssist, PCIe, PSU, SOL</p>
+        <p>⚡ Select a section above</p>
+        <p style="font-size:12px;margin-top:8px;color:var(--gray)">XE9680-specific procedures — iDRAC9, DSU, Network, Storage, Backup</p>
       </div>
     </div>
   </div>
@@ -1882,29 +1964,42 @@ function buildTabBar() {
 function buildSb() {
   const data = SECTIONS[curTab] || [];
   const sb = document.getElementById('sb');
+  const sel = document.getElementById('mob-select');
   sb.innerHTML = '';
+  // Reset mobile dropdown to just the placeholder
+  while(sel.options.length > 1) sel.remove(1);
+
   if (!data.length) {
     sb.innerHTML = '<div style="padding:16px;color:var(--gray);font-size:12px">No sections</div>';
     return;
   }
+  const priLabels = {p1:'🔴',p2:'🟡',p3:'🟢',p4:'🔵'};
   data.forEach(item => {
+    // Sidebar item
     const el = document.createElement('div');
     el.className = 'sb-item' + (curSec === item.id ? ' active' : '') + (done.has(item.id) ? ' done' : '');
     el.innerHTML = '<div class="dot ' + item.pri + '"></div><span class="sb-label">' + item.label + '</span>';
     el.onclick = () => showSec(item.id);
     sb.appendChild(el);
+    // Mobile dropdown option
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = priLabels[item.pri] + ' ' + item.label + (done.has(item.id) ? ' ✓' : '');
+    if(curSec === item.id) opt.selected = true;
+    sel.appendChild(opt);
   });
   updateProg();
 }
 
 function showSec(id) {
+  if(!id) return;
   const all = Object.values(SECTIONS).flat();
   const item = all.find(i => i.id === id);
   if (!item) return;
   curSec = id;
   const c = document.getElementById('content');
   c.innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    '<div class="mark-row">'
     + '<span class="pri-label pri-' + item.pri + '" style="margin:0">'
     + ({ p1:'● P1 Critical', p2:'● P2 Important', p3:'● P3 Routine', p4:'● P4 Reference' }[item.pri]) + '</span>'
     + '<button class="mark-btn' + (done.has(id) ? ' done' : '') + '" onclick="toggleDone(\'' + id + '\')">'
@@ -1913,7 +2008,19 @@ function showSec(id) {
     + '<div class="card"><div class="card-title">' + item.title + '</div>'
     + item.html()
     + '</div>';
+  // Wrap any bare .tbl elements in .tbl-wrap for mobile scroll
+  c.querySelectorAll('.tbl').forEach(t => {
+    if(!t.parentElement.classList.contains('tbl-wrap')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tbl-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    }
+  });
   buildSb();
+  // Sync mobile dropdown
+  const sel = document.getElementById('mob-select');
+  if(sel) sel.value = id;
 }
 
 function showTab(tab) {
@@ -1921,7 +2028,12 @@ function showTab(tab) {
   buildTabBar();
   buildSb();
   document.getElementById('content').innerHTML =
-    '<div class="empty"><p>⚡ Select a section from the sidebar</p></div>';
+    '<div class="empty"><p>⚡ Select a section above</p></div>';
+  const sel = document.getElementById('mob-select');
+  if(sel) sel.value = '';
+  // Scroll active tab into view on mobile
+  const activeTab = document.querySelector('.tb.active');
+  if(activeTab) activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
 }
 
 function toggleDone(id) {
