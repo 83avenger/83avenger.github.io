@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RE Ops Routine — Dell XE9680 A100 Only</title>
+<style>
+:root{--navy:#3B0764;--accent:#7C3AED;--green:#059669;--amber:#D97706;--red:#DC2626;--light:#F5F3FF;--border:#DDD6FE;--text:#111827;--gray:#6B7280;--white:#fff;--bg:#F5F3FF;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#2E1065 0%,#4C1D95 100%);color:#fff;padding:14px 16px;}
+.hdr h1{font-size:15px;font-weight:700;margin-bottom:3px;line-height:1.3;}
+.hdr p{color:#C4B5FD;font-size:11px;margin-bottom:8px;}
+.chips{display:flex;gap:5px;flex-wrap:wrap;}
+.chip{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 9px;font-size:10px;color:#DDD6FE;}
+
+/* TABS — horizontal scroll, touch-friendly */
+.tab-bar{background:#3B0764;display:flex;overflow-x:auto;border-bottom:2px solid rgba(255,255,255,0.1);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tb{padding:11px 14px;cursor:pointer;font-size:12px;font-weight:600;color:#C4B5FD;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.tb:hover{color:#fff;background:rgba(255,255,255,0.08);}
+.tb.active{color:#E9D5FF;border-bottom-color:#A78BFA;}
+
+/* PROGRESS BAR */
+.prog-bar-wrap{background:var(--light);border-bottom:1px solid var(--border);padding:8px 14px;font-size:11px;color:var(--gray);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.pbar{flex:1;min-width:80px;max-width:160px;height:5px;background:var(--border);border-radius:3px;}
+.pfill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
+
+/* DESKTOP LAYOUT — sidebar + content side by side */
+.layout{display:flex;}
+.sb{width:220px;min-width:220px;background:#fff;border-right:1px solid var(--border);min-height:calc(100vh - 140px);}
+.main-wrap{flex:1;min-width:0;}
+.content{padding:16px;}
+
+/* SIDEBAR ITEMS */
+.sb-item{padding:10px 12px 10px 14px;cursor:pointer;border-bottom:1px solid #F5F3FF;font-size:13px;line-height:1.4;display:flex;align-items:flex-start;gap:8px;transition:background .12s;}
+.sb-item:hover{background:var(--light);}
+.sb-item.active{background:#EDE9FE;border-left:3px solid var(--accent);color:var(--accent);font-weight:600;}
+.sb-item.done .sb-label::before{content:"✓ ";color:var(--green);font-weight:700;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.p1{background:var(--red)}.p2{background:var(--amber)}.p3{background:var(--green)}.p4{background:#7C3AED}
+
+/* MOBILE SECTION PICKER — replaces sidebar on small screens */
+.mob-picker{display:none;padding:10px 14px;background:#fff;border-bottom:1px solid var(--border);}
+.mob-picker select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:#fff;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237C3AED' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 20px;color:var(--gray);}
+.empty p{font-size:15px;}
+
+/* CARD */
+.card{background:#fff;border:1px solid var(--border);border-radius:9px;padding:16px;margin-bottom:14px;}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);line-height:1.4;}
+
+/* MARK BUTTON */
+.mark-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.mark-btn{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:12px;color:var(--gray);font-weight:600;white-space:nowrap;}
+.mark-btn:hover{background:#D1FAE5;border-color:var(--green);color:var(--green);}
+.mark-btn.done{background:#D1FAE5;border-color:var(--green);color:var(--green);}
+
+/* PRIORITY LABEL */
+.pri-label{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:10px;}
+.pri-p1{background:#FEE2E2;color:var(--red);}
+.pri-p2{background:#FEF3C7;color:var(--amber);}
+.pri-p3{background:#D1FAE5;color:var(--green);}
+.pri-p4{background:#EDE9FE;color:var(--accent);}
+
+/* CODE BLOCKS */
+.cmd{background:#0F1923;border-radius:7px;padding:12px 14px;margin:8px 0;position:relative;}
+.cmd pre{color:#E2E8F0;font-family:'Consolas','Courier New',monospace;font-size:11px;line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+.cmd .c{color:#4B6280;font-style:italic;}
+.cpbtn{position:absolute;top:7px;right:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#94A3B8;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;}
+.cpbtn:hover{background:rgba(255,255,255,0.2);color:#fff;}
+
+/* ALERTS */
+.alert{border-radius:8px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;align-items:flex-start;}
+.alert.red{background:#FEE2E2;border:1px solid #FECACA;}
+.alert.amber{background:#FEF3C7;border:1px solid #FDE68A;}
+.alert.green{background:#D1FAE5;border:1px solid #A7F3D0;}
+.alert.blue{background:#EFF6FF;border:1px solid #BFDBFE;}
+.alert.purple{background:#F5F3FF;border:1px solid #DDD6FE;}
+.alert h4{font-size:12px;font-weight:700;margin-bottom:4px;}
+.alert p,.alert li{font-size:12px;line-height:1.6;}
+.alert ul{padding-left:16px;}
+
+/* STEP LIST */
+.step-list{counter-reset:steps;list-style:none;padding:0;margin:10px 0;}
+.step-list li{counter-increment:steps;padding:10px 0 10px 36px;border-bottom:1px solid #F1F5F9;font-size:13px;line-height:1.6;position:relative;}
+.step-list li:before{content:counter(steps);position:absolute;left:0;top:10px;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step-list li:last-child{border-bottom:none;}
+
+/* TABLES — scrollable on mobile */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:420px;}
+.tbl th{background:var(--navy);color:#fff;padding:8px 10px;text-align:left;font-size:11px;white-space:nowrap;}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+.tbl tr:nth-child(even) td{background:var(--light);}
+.tbl .crit{color:var(--red);font-weight:700;}
+.tbl .warn{color:var(--amber);font-weight:600;}
+.tbl .ok{color:var(--green);font-weight:600;}
+
+/* NOTE */
+.note{background:#FFF7ED;border:1px solid #FED7AA;border-radius:7px;padding:10px 14px;font-size:12px;color:#92400E;margin:10px 0;line-height:1.6;}
+.note strong{display:block;margin-bottom:3px;}
+
+/* ── MOBILE BREAKPOINT ── */
+@media (max-width: 700px) {
+  body{font-size:14px;}
+
+  /* Header — compact */
+  .hdr{padding:12px 14px;}
+  .hdr h1{font-size:14px;}
+  .chips{display:none;} /* Hide chips on mobile to save space */
+
+  /* Tabs — bigger tap targets */
+  .tb{padding:12px 14px;font-size:12px;}
+
+  /* Hide desktop sidebar */
+  .sb{display:none;}
+
+  /* Show mobile section picker */
+  .mob-picker{display:block;}
+
+  /* Full-width content */
+  .layout{flex-direction:column;}
+  .main-wrap{width:100%;}
+  .content{padding:12px;}
+
+  /* Card — reduce padding */
+  .card{padding:14px;}
+  .card-title{font-size:14px;}
+
+  /* Code blocks — bigger font on mobile for readability */
+  .cmd pre{font-size:12px;line-height:1.6;}
+
+  /* Tables always scrollable */
+  .tbl-wrap{margin:8px -4px;padding:0 4px;}
+
+  /* Step list — more padding for touch */
+  .step-list li{padding:12px 0 12px 36px;font-size:13px;}
+
+  /* Alert */
+  .alert{flex-direction:column;gap:6px;}
+
+  /* Progress bar */
+  .prog-bar-wrap{padding:8px 12px;}
+  .pbar{max-width:100px;}
+}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1>⚡ RE Routine — Dell PowerEdge XE9680 A100 Cluster</h1>
+  <p>iDRAC9 · Dell DSU · SupportAssist · OME · PCIe · PSU · SOL · Network · Storage · Backup</p>
+  <div class="chips">
+    <span class="chip">3× Dell XE9680</span>
+    <span class="chip">24× A100 SXM4 80GB</span>
+    <span class="chip">iDRAC9 + Dell DSU</span>
+    <span class="chip">Mohammed Ayub — Abu Dhabi, UAE</span>
+  </div>
+</div>
+<div class="tab-bar" id="tabbar"></div>
+<div class="prog-bar-wrap">
+  <span>Reviewed: <strong id="dc">0</strong> / <strong id="tc">0</strong></span>
+  <div class="pbar"><div class="pfill" id="pf" style="width:0%"></div></div>
+  <span id="pp">0%</span>
+</div>
+<div class="mob-picker">
+  <select id="mob-select" onchange="showSec(this.value)">
+    <option value="">— Select a section —</option>
+  </select>
+</div>
+<div class="layout">
+  <div class="sb" id="sb"></div>
+  <div class="main-wrap">
+    <div class="content" id="content">
+      <div class="empty">
+        <p>⚡ Select a section above</p>
+        <p style="font-size:12px;margin-top:8px;color:var(--gray)">XE9680-specific procedures — iDRAC9, DSU, Network, Storage, Backup</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let curTab = 'daily_xe', curSec = null, done = new Set();
+
+function cmd(lines) {
+  const pre = lines.map(l => l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')).join('\n');
+  return '<div class="cmd"><button class="cpbtn" onclick="cp(this)">Copy</button><pre>' + pre + '</pre></div>';
+}
+function alert_(cls, title, body) {
+  return '<div class="alert ' + cls + '"><div><h4>' + title + '</h4><p>' + body + '</p></div></div>';
+}
+
+const TABS = ['daily_xe','weekly_xe','monthly_xe','idrac_ref','dsu_ref','ome_ref','network_xe','storage_xe','backup_xe'];
+const TAB_LABELS = ['☀️ Daily','📅 Weekly','🔧 Monthly','🔑 iDRAC9 Ref','📦 DSU / Firmware','🖥️ OME & Warranty','🌐 Network','💾 Storage','🔒 Backup & Restore'];
+
+const SECTIONS = {
+
+daily_xe: [
+  {
+    id: 'xd1', label: '1. iDRAC9 SEL Scan', pri: 'p1',
+    title: 'iDRAC9 System Event Log (SEL) — Last 24 Hours',
+    html: function() { return [
+      '<span class="pri-label pri-p1">P1 Critical — First Check Every Morning</span>',
+      alert_('purple', 'XE9680 has no NVSM — iDRAC9 is your only hardware health source',
+        'Unlike DGX, the XE9680 has no NVIDIA System Management daemon. All hardware-layer events — PSU faults, fan failures, PCIe riser errors, thermal events — exist only in the iDRAC9 SEL. DCGM covers GPU software metrics only. You need both every morning.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Scan SEL for critical/warning events — all 3 nodes</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc ==="',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS sel elist \\',
+        '    | grep -iE "critical|warning|fail|error" | tail -10',
+        'done',
+        '',
+        '# If no critical/warning lines returned = clean overnight',
+        '# If events found, check full entry for timestamp and component',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Full sensor sweep — fans, temps, PSU, voltages</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc sensors ==="',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS sdr type \\',
+        '    Temperature Fan "Power Supply" Voltage \\',
+        '    | grep -v "No Reading" | grep -v "Disabled"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">System health summary via racadm</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc system health ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS getsysinfo \\',
+        '    | grep -E "System Model|Health|Power State|OS Name"',
+        'done',
+      ]),
+      '<table class="tbl"><thead><tr><th>Component</th><th>Normal</th><th>Action if Abnormal</th></tr></thead><tbody>'
+      + [
+        ['Inlet temperature','18–27°C','> 27°C = DC cooling issue, escalate to facilities immediately'],
+        ['CPU temperatures','< 65°C idle / < 85°C load','> 90°C = check heatsink seating, thermal paste'],
+        ['GPU slot (PCIe) temp','< 50°C idle','> 70°C = airflow blockage, check blanking panels'],
+        ['PSU status (12× 3200W)','Present, OK','Any PSU = Absent / Fault → replace before cluster load'],
+        ['GPU fans (15×, hot-swap)','40–60% PWM idle','Any fan = Failed / Off → P1, drain node immediately'],
+        ['CPU fans (5×, cold-swap)','30–50% PWM idle','Requires maintenance window to replace'],
+        ['PCIe riser slot','OK','Absent / Fault = GPU missing from OS → check seating'],
+        ['Voltages (12V, 5V, 3.3V)','Nominal','Any deviation > 5% = PSU or board fault'],
+      ].map(([c,n,a],i) => '<tr><td><strong>' + c + '</strong></td><td class="ok">' + n + '</td><td class="crit">' + a + '</td></tr>').join('')
+      + '</tbody></table>',
+    ].join(''); }
+  },
+  {
+    id: 'xd2', label: '2. PSU & Power Draw', pri: 'p2',
+    title: 'PSU Health & Real-Time Power Consumption',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('amber', 'XE9680 Power Profile',
+        '8× A100 SXM4 at 400W each = 3,200W GPU peak + ~600W CPU/memory = ~3,800W per node. 12× 3200W Titanium PSUs in N+2 configuration. One PSU failure = still N+1. Two failures = no redundancy — escalate immediately.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Real-time power draw — all 3 nodes</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo -n "$bmc power: "',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS dcmi power reading \\',
+        '    | grep "Instantaneous"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Per-PSU status</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc PSU status ==="',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS sdr type "Power Supply" \\',
+        '    | grep -v "No Reading"',
+        'done',
+        '',
+        '# Also via racadm for output wattage per PSU:',
+        '# racadm -r $bmc -u root -p $IDRAC_PASS get system.power',
+      ]),
+      '<table class="tbl"><thead><tr><th>State</th><th>Expected Draw</th><th>Action</th></tr></thead><tbody>'
+      + [
+        ['Idle (no jobs)','800–1,000W / node','> 1,200W idle = zombie GPU process holding power'],
+        ['Training (8× A100 full)','3,400–3,800W / node','> 4,000W = PSU headroom risk, check power cap'],
+        ['1× PSU failed','Remaining 11 handle load','Replace within 24h, N+2 → N+1'],
+        ['2× PSUs failed','Critical, no redundancy','P1 immediate — do not run heavy workloads'],
+      ].map(([s,e,a]) => '<tr><td>' + s + '</td><td class="ok">' + e + '</td><td class="crit">' + a + '</td></tr>').join('')
+      + '</tbody></table>',
+    ].join(''); }
+  },
+  {
+    id: 'xd3', label: '3. GPU & PCIe Slot Check', pri: 'p2',
+    title: 'GPU Count Verification & PCIe Slot Health',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('amber', 'PCIe riser design on XE9680',
+        'XE9680 uses PCIe Gen5 riser cards for 8 GPU slots in a 6U chassis. PCIe riser errors are more likely than on DGX (which has direct board attachment). A missing GPU from nvidia-smi = PCIe or riser fault, not a GPU failure.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Verify all 8 GPUs visible on each node</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  COUNT=$(ssh $node "nvidia-smi -L 2>/dev/null | wc -l")',
+        '  echo "$node: $COUNT / 8 GPUs visible"',
+        '  if [ "$COUNT" != "8" ]; then',
+        '    echo "  *** WARNING: Missing GPUs on $node ***"',
+        '    ssh $node "nvidia-smi -L"',
+        '  fi',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">PCIe AER error counters on GPU slots</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node PCIe errors ==="',
+        '  ssh $node "sudo lspci -d 10de: -vvv 2>/dev/null \\',
+        '    | grep -E -A2 \'UESta|CESta|DevSta\' \\',
+        '    | grep -v \' 0+\' | grep -v \"^--\""',
+        'done',
+        '',
+        '# DCGM PCIe error counters:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node DCGM PCIe ==="',
+        '  ssh $node "dcgmi dmon -e 1017,1018 -d 1 -c 1"',
+        '  # 1017=PCIe Rx errors  1018=PCIe Tx errors',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NVLink topology check (XE9680 = partial, not full NVSwitch)</p>',
+      cmd([
+        '# XE9680 does NOT have NVSwitch ASICs like DGX A100',
+        '# GPU pairs will show NVLink on some connections, PCIe on others',
+        'ssh xe9680-01 "nvidia-smi topo -m"',
+        '',
+        '# Expected: mix of NVL and SYS/NODE entries',
+        '# DGX A100 comparison: ALL pairs show NVL (via 6x NVSwitch)',
+        '',
+        '# Check NVLink status on GPU 0:',
+        'ssh xe9680-01 "nvidia-smi nvlink --status -i 0 -s"',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xd4', label: '4. iDRAC9 Alert Check', pri: 'p3',
+    title: 'iDRAC9 Pending Alerts & Active Sessions',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Check iDRAC9 active service events and open cases</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc service cases ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS servicecmd listall 2>/dev/null \\',
+        '    | grep -v "^$" | head -10',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Check who has active iDRAC sessions (security)</p>',
+      cmd([
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc active sessions ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS getssninfo -A \\',
+        '    | grep -v "^$"',
+        'done',
+        '',
+        '# Terminate unknown sessions:',
+        '# racadm -r $bmc closessn -i <session_id>',
+      ]),
+    ].join(''); }
+  },
+],
+
+weekly_xe: [
+  {
+    id: 'xw1', label: 'Firmware Drift Check', pri: 'p2',
+    title: 'Weekly: iDRAC9 / BIOS / NIC Firmware Drift Across 3 Nodes',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('purple', 'XE9680 firmware drift risk',
+        'Rolling updates applied one node at a time can leave nodes on different firmware versions for days. Mixed iDRAC9 versions complicate troubleshooting. Run this check every Monday to confirm all 3 nodes converged.'),
+      cmd([
+        '#!/bin/bash',
+        '# Weekly firmware consistency check',
+        'echo "=== XE9680 Firmware Versions $(date +%Y-%m-%d) ==="',
+        '',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  NAME=$(echo $bmc | sed s/-bmc//)',
+        '  echo ""',
+        '  echo "--- $NAME ---"',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS getversion \\',
+        '    | grep -E "BIOS|iDRAC|NIC|PSU|CPLD"',
+        'done',
+        '',
+        '# GPU driver and CUDA (from host):',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo -n "$node driver: "',
+        '  ssh $node "nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1"',
+        'done',
+        '',
+        '# ConnectX-7 NIC firmware (if NDR IB fabric):',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo -n "$node CX7 fw: "',
+        '  ssh $node "ibv_devinfo 2>/dev/null | grep fw_ver | head -1"',
+        'done',
+      ]),
+      '<div class="note"><strong>Version mismatch response:</strong> Identify which node is behind. Schedule update during next low-use window. Never update a node that has running jobs. Update order: iDRAC → NIC → GPU FW → BIOS (reboot).</div>',
+    ].join(''); }
+  },
+  {
+    id: 'xw2', label: 'DSU Preview Scan', pri: 'p3',
+    title: 'Weekly: Dell DSU Available Updates Preview',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">Run DSU in preview mode on one node to check what updates are available. No changes applied — just inventory.</p>',
+      cmd([
+        '# Preview available updates (read-only, no changes):',
+        'ssh xe9680-01 "sudo dsu --preview 2>/dev/null \\',
+        '  | grep -E \'Upgrade|Current Version|Available Version|BIOS|iDRAC|NIC|PSU|GPU\'"',
+        '',
+        '# If updates available, log them for monthly update window:',
+        'ssh xe9680-01 "sudo dsu --preview 2>/dev/null" \\',
+        '  > /opt/reports/dsu/xe9680-01_updates_$(date +%Y%m%d).txt',
+      ]),
+      cmd([
+        '# Check Dell catalog date (how current is the update source?):',
+        'ssh xe9680-01 "sudo dsu --catalog-info 2>/dev/null | grep -E \'Date|Version\'"',
+        '',
+        '# Update Dell catalog if stale (> 30 days):',
+        '# sudo dsu --catalog-update',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xw3', label: 'SEL Housekeeping', pri: 'p3',
+    title: 'Weekly: SEL Log Review & Housekeeping',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">iDRAC9 SEL has a fixed capacity (~512 entries). Review weekly and archive before it fills — a full SEL stops recording new events silently.</p>',
+      cmd([
+        '# Check SEL capacity on all 3 nodes:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc SEL capacity ==="',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS sel info \\',
+        '    | grep -E "Entries|Free Space|Percent Used"',
+        'done',
+      ]),
+      cmd([
+        '# Archive full SEL before clearing (never clear without archiving):',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  NAME=$(echo $bmc | sed s/-bmc//)',
+        '  ipmitool -H $bmc -U root -P $IDRAC_PASS sel elist \\',
+        '    > /opt/reports/sel/${NAME}_sel_$(date +%Y%m%d).txt',
+        'done',
+        '',
+        '# Clear SEL after archiving (only if > 80% full):',
+        '# ipmitool -H $bmc -U root -P $IDRAC_PASS sel clear',
+      ]),
+      '<div class="note"><strong>SEL > 80% full:</strong> Archive and clear. SEL overflow means new hardware events are silently dropped — this is a P2 operational risk. Automate via Ansible if SEL reaches 70%.</div>',
+    ].join(''); }
+  },
+  {
+    id: 'xw4', label: 'SupportAssist Health', pri: 'p3',
+    title: 'Weekly: SupportAssist Status & Alert Routing Verification',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      cmd([
+        '# Verify SupportAssist is enabled on all 3 nodes:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc SupportAssist ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get iDRAC.SupportAssist.Enable',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get iDRAC.SupportAssist.ServiceTag',
+        'done',
+      ]),
+      cmd([
+        '# Verify email alerts are routing to RE inbox:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc alert config ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get iDRAC.EmailAlert \\',
+        '    | grep -E "Enable|Address"',
+        'done',
+        '',
+        '# Send test alert (weekly, confirm delivery):',
+        '# racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS testalert -t email',
+      ]),
+    ].join(''); }
+  },
+],
+
+monthly_xe: [
+  {
+    id: 'xm1', label: 'Firmware Update Window', pri: 'p2',
+    title: 'Monthly: Full Firmware Update — Rolling One Node at a Time',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important — Requires Maintenance Window</span>',
+      alert_('amber', 'Update sequence is critical — wrong order causes issues',
+        'Always: iDRAC9 first (no reboot) → NIC firmware (no reboot) → GPU firmware (no reboot) → PSU CPLD (no reboot) → BIOS last (requires reboot). Never update all 3 nodes simultaneously.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Full update procedure — one node at a time</p>',
+      cmd([
+        '#!/bin/bash',
+        '# Run on one node at a time. Drain from Slurm first.',
+        'NODE=xe9680-01',
+        'BMC=xe9680-01-bmc',
+        '',
+        '# Step 0: Drain from Slurm and wait for jobs to finish',
+        'scontrol update nodename=$NODE state=drain reason="firmware_update_$(date +%Y%m)"',
+        'watch -n 30 "squeue -w $NODE | wc -l"  # Wait until = 1',
+        '',
+        '# Step 1: iDRAC9 update (no reboot)',
+        'ssh $NODE "sudo dsu --non-interactive --apply-upgrades --category=iDRAC"',
+        '',
+        '# Step 2: NIC firmware - ConnectX-7 (no reboot)',
+        'ssh $NODE "sudo dsu --non-interactive --apply-upgrades --category=NIC"',
+        '',
+        '# Step 3: GPU firmware (no reboot on most versions)',
+        'ssh $NODE "sudo dsu --non-interactive --apply-upgrades --category=Video"',
+        '',
+        '# Step 4: PSU CPLD (no reboot)',
+        'ssh $NODE "sudo dsu --non-interactive --apply-upgrades --category=CPLD"',
+        '',
+        '# Step 5: BIOS — schedule separately, requires reboot',
+        'ssh $NODE "sudo dsu --non-interactive --apply-upgrades --category=BIOS"',
+        'ssh $NODE "sudo reboot"',
+        '',
+        '# Post-reboot verification:',
+        'racadm -r $BMC -u root -p $IDRAC_PASS getversion | grep -E "BIOS|iDRAC"',
+        'ssh $NODE "nvidia-smi -q | grep -E \'Firmware|Driver\'"',
+        'ssh $NODE "dcgmi health -g 0 --check"',
+        '',
+        '# Resume in Slurm after verification:',
+        'scontrol update nodename=$NODE state=resume',
+        '',
+        '# Repeat for xe9680-02 and xe9680-03',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xm2', label: 'Lifecycle Controller Backup', pri: 'p2',
+    title: 'Monthly: Server Configuration Profile (SCP) Backup',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('green', 'Why this matters',
+        'The iDRAC9 Lifecycle Controller stores your full server configuration — BIOS settings, boot order, RAID, NIC config, iDRAC network settings. Export monthly. Critical if you ever replace a motherboard and need to restore the exact configuration.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Export Server Configuration Profile — all 3 nodes</p>',
+      cmd([
+        '# Export SCP to local file via Redfish API:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  BMC=${node}-bmc',
+        '  echo "Exporting SCP for $node..."',
+        '  curl -sk -u root:$IDRAC_PASS \\',
+        '    -X POST \\',
+        '    -H "Content-Type: application/json" \\',
+        '    -d \'{"ExportFormat":"XML","ExportUse":"Default","ShareParameters":{"Target":"ALL","ShareType":"Local"}}\' \\',
+        '    https://$BMC/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/DellManager.ExportSystemProfile \\',
+        '    -o /opt/backups/idrac/${node}_scp_$(date +%Y%m%d).xml',
+        '  echo "$node SCP saved to /opt/backups/idrac/"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Verify critical BIOS settings for GPU compute workloads</p>',
+      cmd([
+        '# Check BIOS settings that affect GPU performance:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc BIOS GPU-critical settings ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get BIOS.ProcSettings \\',
+        '    | grep -E "LogicalProc|Virtuali|NumaNodes"',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get BIOS.IntegratedDevices \\',
+        '    | grep -E "SriovGlobal|PcieSer"',
+        'done',
+        '',
+        '# Required settings for full GPU compute:',
+        '# HyperThreading         = Enabled',
+        '# VirtualizationTechnology = Enabled  (MIG requires VT-d)',
+        '# SriovGlobalEnable      = Enabled    (SR-IOV / vGPU)',
+        '# NumaNodesPerSocket     = 1 or 2     (NUMA-aware scheduling)',
+        '# All GPU PCIe slots     = LinkSpeed=Auto, Width=x16',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xm3', label: 'Warranty & Support Check', pri: 'p3',
+    title: 'Monthly: Warranty Status & ProSupport Expiry Check',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      alert_('red', 'XE9680 GA was March 22, 2023 — standard 3yr ProSupport = expiry March 2026',
+        'If you have standard ProSupport, it may already be expired or expiring imminently. Check now and renew or escalate to procurement. Without active support you cannot open P1 hardware tickets with Dell.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Get service tags from iDRAC</p>',
+      cmd([
+        '# Get service tag for each node:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo -n "$bmc service tag: "',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get iDRAC.Info.ServiceTag',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Check warranty via Dell API (requires Dell API token)</p>',
+      cmd([
+        '# Dell TechDirect API — warranty lookup:',
+        'for TAG in XXXXXXX YYYYYYY ZZZZZZZ; do  # Replace with actual service tags',
+        '  echo "=== Service Tag: $TAG ==="',
+        '  curl -sk \\',
+        '    "https://apigtwb2c.us.dell.com/PROD/sbil/eapi/v5/asset-entitlements?servicetags=$TAG" \\',
+        '    -H "Authorization: Bearer $DELL_API_TOKEN" \\',
+        '    | python3 -c "import json,sys; \\',
+        '      d=json.load(sys.stdin); \\',
+        '      e=d[0][\'entitlements\'][0]; \\',
+        '      print(\'  Service Level:\', e[\'serviceLevelDescription\']); \\',
+        '      print(\'  End Date:\', e[\'endDate\'])"',
+        'done',
+        '',
+        '# Or check manually at: https://www.dell.com/support/home',
+      ]),
+      '<div class="note"><strong>Recommended support level:</strong> ProSupport Plus with Next Business Day Onsite for all 3 XE9680 nodes. Standard ProSupport (parts only, no onsite) is insufficient for a production GPU cluster — a dead PSU or failed GPU card needs onsite replacement, not a mail-in RMA.</div>',
+    ].join(''); }
+  },
+],
+
+idrac_ref: [
+  {
+    id: 'xi1', label: 'Remote Console & SOL', pri: 'p4',
+    title: 'iDRAC9 Reference: Remote Console & Serial-Over-LAN',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      alert_('purple', 'Know these commands before 2am',
+        'When SSH to the host fails (kernel panic, GPU driver hang, boot failure), iDRAC9 SOL and virtual console are your only recovery path. Practice these before you need them.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Serial-Over-LAN (SOL) — out-of-band text console</p>',
+      cmd([
+        '# Activate SOL (you get a serial console to the host OS):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS -I lanplus sol activate',
+        '',
+        '# Exit SOL session: press ~ then . (tilde dot)',
+        '',
+        '# Deactivate stuck SOL session:',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS -I lanplus sol deactivate',
+        '',
+        '# SOL info (baud rate, enabled status):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS sol info',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Remote power management</p>',
+      cmd([
+        '# Power status:',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS power status',
+        '',
+        '# Graceful OS shutdown (ACPI signal — use first):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS power soft',
+        '',
+        '# Hard reset (immediate — use only if OS is completely frozen):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS power reset',
+        '',
+        '# Full power cycle (off then on — recovers from hard hangs):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS power cycle',
+        '',
+        '# Via racadm (safer — can check for pending Slurm jobs first):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS serveraction graceshutdown',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS serveraction powercycle',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">iDRAC9 reset (when iDRAC itself is unresponsive)</p>',
+      cmd([
+        '# Soft iDRAC reset — does NOT affect host OS or running jobs:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS racreset',
+        '# Wait 3 minutes for iDRAC to come back online',
+        '',
+        '# Hard iDRAC reset (only if soft reset fails):',
+        'ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS mc reset cold',
+        '# Also does NOT affect host OS',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Virtual console (HTML5 browser-based)</p>',
+      cmd([
+        '# Open virtual console URL:',
+        'echo "Open in browser: https://xe9680-01-bmc/console"',
+        '',
+        '# Check active console sessions (evict unknown users):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS getssninfo -A',
+        '',
+        '# Terminate a specific session:',
+        '# racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS closessn -i <session_id>',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xi2', label: 'iDRAC9 User & Network Config', pri: 'p4',
+    title: 'iDRAC9 Reference: User Management & Network Settings',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">User account management</p>',
+      cmd([
+        '# List all iDRAC9 users:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS get iDRAC.Users',
+        '',
+        '# Add RE ops user (slot 3, adjust as needed):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.Users.3.UserName re-ops',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.Users.3.Password "$NEW_PASS"',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.Users.3.Privilege 0x1ff  # Administrator',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.Users.3.Enable 1',
+        '',
+        '# Change root password (do this on initial setup):',
+        'racadm -r xe9680-01-bmc -u root -p $OLD_PASS \\',
+        '  set iDRAC.Users.2.Password "$NEW_PASS"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">iDRAC9 network configuration</p>',
+      cmd([
+        '# Check current iDRAC IP settings:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS get iDRAC.IPv4',
+        '',
+        '# Set static IP (if needed):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.IPv4.DHCPEnable 0',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.IPv4.Address 10.0.0.101',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.IPv4.Gateway 10.0.0.1',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.IPv4.Netmask 255.255.255.0',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xi3', label: 'SupportAssist Collection', pri: 'p4',
+    title: 'iDRAC9 Reference: SupportAssist Diagnostic Collection',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">When opening a P1/P2 Dell support case, always include a SupportAssist collection. It gives Dell L3 engineers hardware telemetry, firmware logs, SEL, BIOS config, and TTY logs in one package.</p>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Trigger and download collection</p>',
+      cmd([
+        '# Step 1: Trigger collection on the affected node:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  techsupreport collect -t SysInfo,TTYLog,HWData,OSAppData',
+        '',
+        '# Step 2: Check collection status:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  techsupreport getcompletioncode',
+        '',
+        '# Step 3: Download the zip:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  techsupreport download \\',
+        '  -f /tmp/xe9680-01-support-$(date +%Y%m%d).zip',
+        '',
+        '# File will be at /tmp/xe9680-01-support-YYYYMMDD.zip',
+        '# Upload to Dell case portal or attach to SupportAssist case',
+      ]),
+      cmd([
+        '# Enable auto-collection on critical events (configure once):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  set iDRAC.SupportAssist.AutoCollectOnCritical 1',
+        '',
+        '# Verify SupportAssist contact details:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  get iDRAC.SupportAssist | grep -E "Enable|PrimaryContact|Email"',
+      ]),
+    ].join(''); }
+  },
+],
+
+dsu_ref: [
+  {
+    id: 'xf1', label: 'DSU Cheat Sheet', pri: 'p4',
+    title: 'Dell DSU (System Update) — Complete Command Reference',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">DSU essentials</p>',
+      cmd([
+        '# Install DSU (if not already installed):',
+        'curl -L https://linux.dell.com/repo/hardware/dsu/bootstrap.cgi | bash',
+        'apt-get install -y dell-system-update  # Debian/Ubuntu',
+        '',
+        '# Check DSU version:',
+        'dsu --version',
+      ]),
+      cmd([
+        '# Preview all available updates (no changes applied):',
+        'sudo dsu --preview',
+        '',
+        '# Preview by category:',
+        'sudo dsu --preview --category=BIOS',
+        'sudo dsu --preview --category=iDRAC',
+        'sudo dsu --preview --category=NIC',
+        'sudo dsu --preview --category=Video      # GPU firmware',
+        'sudo dsu --preview --category=CPLD       # PSU controllers',
+        'sudo dsu --preview --category=FRMW       # All firmware',
+        'sudo dsu --preview --category=DRVR       # Drivers',
+      ]),
+      cmd([
+        '# Apply updates non-interactively by category:',
+        'sudo dsu --non-interactive --apply-upgrades --category=iDRAC',
+        'sudo dsu --non-interactive --apply-upgrades --category=NIC',
+        'sudo dsu --non-interactive --apply-upgrades --category=Video',
+        'sudo dsu --non-interactive --apply-upgrades --category=CPLD',
+        'sudo dsu --non-interactive --apply-upgrades --category=BIOS',
+        '# Note: BIOS update stages reboot - confirm before scheduling',
+        '',
+        '# Apply ALL available updates at once (use with caution):',
+        'sudo dsu --non-interactive --apply-upgrades',
+        '',
+        '# Update Dell repository catalog first:',
+        'sudo dsu --catalog-update',
+      ]),
+      cmd([
+        '# Check if staged BIOS update is pending a reboot:',
+        'sudo dsu --get-update-list | grep -i "pending\\|reboot"',
+        '',
+        '# Clear pending updates (if you want to abort):',
+        'sudo dsu --clear-updates',
+        '',
+        '# Apply a specific DUP (Dell Update Package) file directly:',
+        'sudo dsu --apply <path/to/update.BIN>',
+      ]),
+      '<table class="tbl"><thead><tr><th>Category</th><th>Component</th><th>Reboot?</th></tr></thead><tbody>'
+      + [
+        ['iDRAC','iDRAC9 firmware','No'],
+        ['NIC','ConnectX-7 / NIC firmware','No (usually)'],
+        ['Video','GPU firmware (A100)','No (usually)'],
+        ['CPLD','PSU controllers, power sequencing','No'],
+        ['BIOS','System BIOS','Yes — schedule separately'],
+        ['FRMW','All firmware above','Depends on BIOS inclusion'],
+        ['DRVR','OS drivers','Depends on driver'],
+      ].map(([c,comp,r]) => '<tr><td><strong>' + c + '</strong></td><td>' + comp + '</td><td>' + (r==='Yes — schedule separately' ? '<span class="crit">' + r + '</span>' : r) + '</td></tr>').join('')
+      + '</tbody></table>',
+    ].join(''); }
+  },
+  {
+    id: 'xf2', label: 'iDRAC9 Redfish API', pri: 'p4',
+    title: 'iDRAC9 Redfish API — Automation Reference',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">iDRAC9 supports the Redfish API for automation. Use instead of racadm for scripting and Ansible integration.</p>',
+      cmd([
+        '# System overview:',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  https://xe9680-01-bmc/redfish/v1/Systems/System.Embedded.1 \\',
+        '  | python3 -m json.tool | grep -E "Model|Status|PowerState|MemoryGiB"',
+        '',
+        '# All sensors:',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  https://xe9680-01-bmc/redfish/v1/Chassis/System.Embedded.1/Sensors \\',
+        '  | python3 -m json.tool | grep -E "Name|Reading|Status"',
+        '',
+        '# PSU inventory:',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  https://xe9680-01-bmc/redfish/v1/Chassis/System.Embedded.1/Power \\',
+        '  | python3 -m json.tool | grep -E "Name|Status|PowerInputWatts|PowerOutputWatts"',
+      ]),
+      cmd([
+        '# GPU PCIe device inventory:',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  https://xe9680-01-bmc/redfish/v1/Systems/System.Embedded.1/PCIeDevices \\',
+        '  | python3 -m json.tool | grep -E "Name|Status|@odata.id"',
+        '',
+        '# Firmware inventory:',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  https://xe9680-01-bmc/redfish/v1/UpdateService/FirmwareInventory \\',
+        '  | python3 -m json.tool | grep -E "Name|Version|Updateable"',
+        '',
+        '# Graceful power off via Redfish:',
+        'curl -sk -u root:$IDRAC_PASS -X POST \\',
+        '  -H "Content-Type: application/json" \\',
+        '  -d \'{"ResetType":"GracefulShutdown"}\' \\',
+        '  https://xe9680-01-bmc/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset',
+      ]),
+    ].join(''); }
+  },
+],
+
+ome_ref: [
+  {
+    id: 'xo1', label: 'OME Fleet Dashboard', pri: 'p4',
+    title: 'OpenManage Enterprise — Fleet Health & Firmware Compliance',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      alert_('purple', 'OME is free with XE9680 hardware',
+        'Dell OpenManage Enterprise (OME) provides a single pane for health, firmware compliance, warranty, and alerts across all 3 XE9680 nodes. Deploy on a small Ubuntu VM (4 vCPU, 16GB RAM). Available at: https://www.dell.com/support/home/drivers/driversdetails?driverId=OME'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">OME REST API — fleet health check</p>',
+      cmd([
+        '# List all discovered devices and health status:',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  https://ome-server/api/DeviceService/Devices \\',
+        '  | python3 -c "import json,sys; \\',
+        '    d=json.load(sys.stdin); \\',
+        '    [print(x[\'DeviceName\'],\'|\',x[\'DeviceServiceTag\'],\'|\',x[\'Status\']) \\',
+        '    for x in d[\'value\']]"',
+        '',
+        '# Status codes: 1000=Unknown, 2000=OK, 3000=Warning, 4000=Critical',
+      ]),
+      cmd([
+        '# Firmware compliance report against baseline:',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  https://ome-server/api/UpdateService/Baselines \\',
+        '  | python3 -m json.tool | grep -E "Name|ComplianceStatus|TargetCount"',
+        '',
+        '# Get non-compliant devices:',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  "https://ome-server/api/UpdateService/Baselines(1)/DeviceComplianceReports" \\',
+        '  | python3 -c "import json,sys; \\',
+        '    d=json.load(sys.stdin); \\',
+        '    [print(x[\'DeviceName\'],x[\'ComplianceStatus\']) \\',
+        '    for x in d[\'value\'] if x[\'ComplianceStatus\'] != \'OK\']"',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xo2', label: 'OME Alerts & Warranty', pri: 'p4',
+    title: 'OME Alerts Configuration & Warranty Tracking',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">OME alert policies — route critical hardware alerts to RE</p>',
+      cmd([
+        '# List configured alert policies:',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  https://ome-server/api/AlertService/AlertPolicies \\',
+        '  | python3 -m json.tool | grep -E "Name|Enabled|CategoryIds"',
+        '',
+        '# Check alert destination (email):',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  https://ome-server/api/AlertService/AlertDestinations \\',
+        '  | python3 -m json.tool | grep -E "Name|DestinationAddress|Type"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Warranty summary — all 3 XE9680 nodes</p>',
+      cmd([
+        '# Get warranty info via OME:',
+        'curl -sk -u admin:$OME_PASS \\',
+        '  https://ome-server/api/DeviceService/Devices \\',
+        '  | python3 -c "import json,sys; \\',
+        '    d=json.load(sys.stdin); \\',
+        '    [print(x[\'DeviceName\'],x[\'DeviceServiceTag\'],\\',
+        '    x.get(\'DeviceSubscriptionState\',\'N/A\')) \\',
+        '    for x in d[\'value\']]"',
+        '',
+        '# Or check per service tag via Dell API:',
+        '# See monthly_xe -> Warranty & Support Check section',
+      ]),
+      '<div class="note"><strong>OME free tier limits:</strong> OME Standard (free) supports up to 100 devices, full firmware update orchestration, and compliance reporting. More than sufficient for a 3-node XE9680 cluster. OME Advanced adds additional security scanning features.</div>',
+    ].join(''); }
+  },
+],
+
+network_xe: [
+  {
+    id: 'xn1', label: '1. ConnectX-7 Daily Health', pri: 'p1',
+    title: 'ConnectX-7 NDR IB — Daily Port & Error Check',
+    html: function() { return [
+      '<span class="pri-label pri-p1">P1 Critical</span>',
+      alert_('purple', 'XE9680 ships with ConnectX-7 NDR 400G (not CX6 like DGX A100)',
+        'ConnectX-7 is the current active NIC — no EOL concern. Each XE9680 has 2× ConnectX-7 cards, each with 2× NDR400 ports = 8 NDR ports per node total (4 active for compute fabric). Requires DOCA-OFED for full feature support.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Port state and link speed — all 3 nodes</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node IB ports ==="',
+        '  ssh $node "ibstat | grep -E \'CA |Port |State|Physical|Rate|Link layer\'"',
+        'done',
+        '',
+        '# All active ports must show:',
+        '# State: Active',
+        '# Physical state: LinkUp',
+        '# Rate: 400 Gb/sec (NDR)',
+        '# Link layer: InfiniBand',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Scan all IB ports for non-zero error counters</p>',
+      cmd([
+        '# Scan fabric for errors (suppress normal zero counters):',
+        'ibqueryerrors --suppress-common -r',
+        '',
+        '# If errors found on a specific port, identify the cable/node:',
+        'ibnetdiscover | grep -A2 "<port_lid>"',
+        '',
+        '# Check signal quality on a specific CX7 port:',
+        'ssh xe9680-01 "mlxlink -d /dev/mst/mt4129_pciconf0 --json \\',
+        '  | python3 -m json.tool | grep -E \'ber|error|state|speed|width\'"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Verify nvidia-peermem (GPUDirect RDMA) loaded</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo -n "$node peermem: "',
+        '  ssh $node "cat /proc/driver/nvidia-peermem/status 2>/dev/null || echo NOT_LOADED"',
+        'done',
+        '',
+        '# Fix if not loaded (required for NCCL over IB to use GDR):',
+        '# ssh xe9680-01 "sudo modprobe nvidia-peermem"',
+        '',
+        '# Make persistent across reboots:',
+        '# echo "nvidia-peermem" | sudo tee /etc/modules-load.d/nvidia-peermem.conf',
+      ]),
+      '<table class="tbl"><thead><tr><th>Counter</th><th>Normal</th><th>Warning</th><th>Action</th></tr></thead><tbody>'
+      + [
+        ['SymbolError','0–2/hr','> 10/hr','Cable/transceiver degradation — mlxlink + cable swap'],
+        ['PortRcvErrors','0','Any increasing','Accompanies SymbolError — same action'],
+        ['PortXmitDiscards','0','> 100/sec','Fabric congestion — check ECN/routing on switch'],
+        ['IB Port State','Active','Init/Armed','OpenSM down or link negotiation failed'],
+        ['Rate','400 Gb/s (NDR)','< 200 Gb/s','Auto-negotiated down — check cable/switch port'],
+        ['nvidia-peermem','Loaded','Not loaded','NCCL cannot use GDR — modprobe nvidia-peermem'],
+      ].map(([c,n,w,a]) => '<tr><td><strong>' + c + '</strong></td><td class="ok">' + n + '</td><td class="warn">' + w + '</td><td class="crit">' + a + '</td></tr>').join('')
+      + '</tbody></table>',
+    ].join(''); }
+  },
+  {
+    id: 'xn2', label: '2. DOCA-OFED Status', pri: 'p2',
+    title: 'DOCA-OFED Version & Migration Status',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('amber', 'MLNX_OFED EOL October 2027 — migrate to DOCA-OFED',
+        'MLNX_OFED last standalone release was October 2024 (3-year LTS = EOL October 2027). All new features since January 2025 are in DOCA-OFED only. ConnectX-8 (XE9780) requires DOCA-OFED exclusively. XE9680 works with either but you should standardise on DOCA-OFED now.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Check current OFED stack on all 3 nodes</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node OFED ==="',
+        '  ssh $node "ofed_info -s 2>/dev/null || \\',
+        '    dpkg -l | grep -iE "mlnx-ofed|doca" | head -3"',
+        'done',
+        '',
+        '# Check if on MLNX_OFED or DOCA-OFED:',
+        '# MLNX_OFED: package name contains "mlnx-ofed"',
+        '# DOCA-OFED: package name contains "doca" or "doca-ofed"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">DOCA-OFED installation (replaces MLNX_OFED 1:1)</p>',
+      cmd([
+        '# Download DOCA-OFED from NVIDIA (doca-ofed profile):',
+        '# https://developer.nvidia.com/networking/doca',
+        '',
+        '# Ubuntu 22.04 install:',
+        'apt-get remove --purge mlnx-ofed-all  # Remove MLNX_OFED first',
+        'apt-get install doca-ofed              # Install DOCA-OFED',
+        '',
+        '# Or use the full DOCA-Host installer with doca-ofed profile:',
+        'bash doca_host_repo_*.sh install --profile=doca-ofed',
+        '',
+        '# Verify after install:',
+        'ofed_info -s',
+        'ibv_devinfo | grep fw_ver',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">ConnectX-7 firmware update via DOCA-OFED</p>',
+      cmd([
+        '# Check current CX7 firmware version:',
+        'ssh xe9680-01 "ibv_devinfo | grep fw_ver"',
+        '# Or: flint -d /dev/mst/mt4129_pciconf0 q | grep FW',
+        '',
+        '# Update CX7 firmware via mlxfwmanager (part of DOCA-OFED):',
+        'ssh xe9680-01 "sudo mlxfwmanager --update"',
+        '',
+        '# Or via Dell DSU (category=NIC):',
+        'ssh xe9680-01 "sudo dsu --non-interactive --apply-upgrades --category=NIC"',
+        '',
+        '# AC power cycle required after CX7 firmware update:',
+        '# ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS power cycle',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xn3', label: '3. InfiniBand Fabric Ops', pri: 'p2',
+    title: 'InfiniBand Fabric — Topology, Routing & Subnet Manager',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Subnet Manager status (OpenSM or switch-based SM)</p>',
+      cmd([
+        '# Check if OpenSM is running on the management node:',
+        'systemctl status opensm',
+        '',
+        '# If SM is running on an IB switch (QM9700 or Q3400):',
+        'ssh ib-switch-01 "ibsm show status"',
+        '',
+        '# Check SM is managing the fabric (should show master SM):',
+        'smpquery -C mlx5_0 -P 1 NodeInfo 0 | grep -E "NodeGUID|NodeDesc"',
+        '',
+        '# Start OpenSM if not running (fabric will degrade without SM):',
+        'sudo systemctl start opensm',
+        'sudo systemctl enable opensm',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Fabric topology snapshot — capture weekly</p>',
+      cmd([
+        '# Full fabric topology discovery:',
+        'ibnetdiscover > /opt/reports/fabric/topology_$(date +%Y%m%d).txt',
+        '',
+        '# Show all nodes in fabric:',
+        'ibhosts',
+        '',
+        '# Show all switches in fabric:',
+        'ibswitches',
+        '',
+        '# Verify all 3 XE9680 nodes are in fabric:',
+        'ibhosts | grep -i xe9680',
+        '# Expected: 3 entries, one per node',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">IB bandwidth test between nodes (weekly validation)</p>',
+      cmd([
+        '# Server side (xe9680-02):',
+        'ssh xe9680-02 "ib_read_bw -d mlx5_0 -i 1 &"',
+        '',
+        '# Client side (xe9680-01):',
+        'ssh xe9680-01 "ib_read_bw -d mlx5_0 -i 1 xe9680-02"',
+        '',
+        '# Expected bandwidth:',
+        '# NDR 400G single port: ~380–390 Gb/s (95%+ line rate)',
+        '# < 300 Gb/s = fabric issue, cable, or mismatched MTU',
+        '',
+        '# Latency test:',
+        'ssh xe9680-02 "ib_write_lat -d mlx5_0 -i 1 &"',
+        'ssh xe9680-01 "ib_write_lat -d mlx5_0 -i 1 xe9680-02"',
+        '# Expected: < 2 μs for NDR single-hop',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">MTU consistency check — must match across all nodes and switch</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo -n "$node MTU: "',
+        '  ssh $node "ibstat | grep MTU"',
+        'done',
+        '# All must show: MTU: 4096  (IB standard for HPC)',
+        '# MTU mismatch = NCCL hangs and timeouts',
+        '',
+        '# Fix MTU mismatch (set on SM side):',
+        '# Edit /etc/opensm/opensm.conf: subnet_max_mtu 5 (= 4096)',
+        '# Then: systemctl restart opensm',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xn4', label: '4. NCCL & GPUDirect Validation', pri: 'p2',
+    title: 'NCCL Multi-Node & GPUDirect RDMA Validation',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('purple', 'Run this after any network maintenance or node recovery',
+        'After any IB cable swap, firmware update, or node reboot, validate NCCL AllReduce still works across all 3 nodes before returning to production. A silent NCCL fallback to TCP reduces training bandwidth by 10×.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NCCL AllReduce test — 3 nodes × 8 GPUs</p>',
+      cmd([
+        '# Run NCCL tests (install from: github.com/NVIDIA/nccl-tests):',
+        'mpirun --hostfile /etc/mpi/hostfile -np 24 \\',
+        '  -x NCCL_DEBUG=INFO \\',
+        '  -x NCCL_IB_DISABLE=0 \\',
+        '  -x NCCL_NET_GDR_LEVEL=2 \\',
+        '  /opt/nccl-tests/build/all_reduce_perf \\',
+        '  -b 1G -e 4G -f 2 -g 1',
+        '',
+        '# Expected: bus bandwidth > 150 GB/s per GPU (NDR IB with GDR)',
+        '# If bus BW < 50 GB/s = falling back to TCP (peermem not loaded?)',
+        '# If bus BW 50-150 GB/s = IB active but GDR not working',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Diagnose NCCL transport being used</p>',
+      cmd([
+        '# Run with verbose debug to see transport selection:',
+        'NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=INIT,NET \\',
+        '  python3 -c "import torch.distributed as dist; \\',
+        '  dist.init_process_group(\'nccl\')" 2>&1 | grep -E "NET|transport|IB|GDR"',
+        '',
+        '# Look for these lines in output:',
+        '# NCCL INFO NET/IB : Using [0]mlx5_0:1 ...  = IB active',
+        '# NCCL INFO Using GDRDMA             = GPUDirect RDMA active (best)',
+        '# NCCL INFO Using net                = TCP fallback (worst)',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xn5', label: '5. OOB Network (iDRAC)', pri: 'p3',
+    title: 'Out-of-Band Network — iDRAC9 Dedicated Port Health',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">The iDRAC9 dedicated management port is your lifeline when the host OS is down. Verify it is on its own isolated VLAN and reachable from the RE workstation at all times.</p>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Verify iDRAC9 network reachability — all 3 BMCs</p>',
+      cmd([
+        '# Ping all 3 BMC IPs:',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo -n "$bmc: "',
+        '  ping -c 2 -W 2 $bmc 2>&1 | tail -1',
+        'done',
+        '',
+        '# Check iDRAC VLAN config (should be on dedicated mgmt VLAN):',
+        'for bmc in xe9680-01-bmc xe9680-02-bmc xe9680-03-bmc; do',
+        '  echo "=== $bmc network ==="',
+        '  racadm -r $bmc -u root -p $IDRAC_PASS get iDRAC.IPv4 \\',
+        '    | grep -E "Address|Netmask|Gateway|DNSRacName"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">iDRAC NIC selection — dedicated vs shared mode</p>',
+      cmd([
+        '# Check iDRAC NIC mode (dedicated = best practice for production):',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '  get iDRAC.NIC.Selection',
+        '',
+        '# Should be: Dedicated (not Shared or LOM)',
+        '# Shared mode = iDRAC shares the host NIC = OOB access fails if host NIC driver crashes',
+        '',
+        '# Set to dedicated if wrong:',
+        '# racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS \\',
+        '#   set iDRAC.NIC.Selection Dedicated',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Host data network (compute NICs) — quick check</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node data NICs ==="',
+        '  ssh $node "ip -br link show | grep -v lo"',
+        '  ssh $node "ip -br addr show | grep -v lo | grep UP"',
+        'done',
+        '',
+        '# Check for NIC errors on host data interfaces:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node NIC errors ==="',
+        '  ssh $node "ip -s link show | grep -A6 \'mlx5\' | grep -E \'errors|dropped\' | grep -v \' 0 \'"',
+        'done',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xn6', label: '6. Network Runbook — NCCL Timeout', pri: 'p2',
+    title: 'Runbook: NCCL Timeout Diagnosis (XE9680 Specific)',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      '<ol class="step-list">'
+      + [
+        '<strong>Enable NCCL debug and identify the failing operation and rank</strong>'
+          + cmd([
+            'export NCCL_DEBUG=INFO',
+            'export NCCL_DEBUG_SUBSYS=NET,INIT',
+            'export NCCL_IB_TIMEOUT=23  # Increase from default 18 to rule out marginal latency',
+            'torchrun --nnodes=3 ... 2>&1 | tee /tmp/nccl_debug.log',
+            '',
+            '# Check which rank timed out and which operation:',
+            'grep -E "timeout|failed|rank" /tmp/nccl_debug.log | tail -20',
+          ]),
+        '<strong>Check RDMA devices are visible inside the container/Slurm job</strong>'
+          + cmd([
+            '# RDMA devices must be bind-mounted into the container:',
+            'ssh xe9680-01 "ls -la /dev/infiniband/"',
+            '# Must show: uverbs0, uverbs1, rdma_cm',
+            '',
+            '# For Pyxis/Enroot jobs, ensure --bind flag includes IB devices:',
+            '# srun --container-image=myimage.sqsh \\',
+            '#   --container-mounts=/dev/infiniband:/dev/infiniband \\',
+            '#   python train.py',
+          ]),
+        '<strong>Check nvidia-peermem loaded on all 3 nodes</strong>'
+          + cmd([
+            'for node in xe9680-01 xe9680-02 xe9680-03; do',
+            '  echo -n "$node peermem: "',
+            '  ssh $node "cat /proc/driver/nvidia-peermem/status 2>/dev/null || echo NOT_LOADED"',
+            'done',
+            '# If NOT_LOADED: sudo modprobe nvidia-peermem',
+          ]),
+        '<strong>Check IB errors on all ports and MTU consistency</strong>'
+          + cmd([
+            'ibqueryerrors --suppress-common -r',
+            '',
+            'for node in xe9680-01 xe9680-02 xe9680-03; do',
+            '  echo -n "$node MTU: "',
+            '  ssh $node "ibstat | grep MTU"',
+            'done  # All must be 4096',
+          ]),
+        '<strong>Run point-to-point RDMA bandwidth test to isolate the failing link</strong>'
+          + cmd([
+            '# Test each pair of nodes:',
+            'ssh xe9680-02 "ib_read_bw -d mlx5_0 -i 1 &"',
+            'ssh xe9680-01 "ib_read_bw -d mlx5_0 -i 1 xe9680-02"',
+            '',
+            '# < 300 Gb/s on NDR = fabric/cable issue on that specific link',
+            '# Repeat for xe9680-01 <-> xe9680-03 and xe9680-02 <-> xe9680-03',
+          ]),
+        '<strong>Check Dell CX7 NIC firmware is current and consistent</strong>'
+          + cmd([
+            'for node in xe9680-01 xe9680-02 xe9680-03; do',
+            '  echo -n "$node CX7 fw: "',
+            '  ssh $node "ibv_devinfo | grep fw_ver | head -1"',
+            'done',
+            '# Mixed firmware versions across nodes can cause NCCL negotiation failures',
+          ]),
+      ].map(l => '<li>' + l + '</li>').join('')
+      + '</ol>',
+    ].join(''); }
+  },
+],
+
+storage_xe: [
+  {
+    id: 'xs1', label: '1. Local NVMe Daily Check', pri: 'p2',
+    title: 'Local NVMe Scratch — Daily Health & Capacity',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('purple', 'XE9680 NVMe configuration',
+        'XE9680 A100 ships with up to 10× U.2 NVMe SSDs (up to 153.6 TB) as local scratch storage. These are high-performance NVMe drives managed directly by the OS. No RAID by default — data on local NVMe is ephemeral. Jobs must copy results to NFS/shared storage before terminating.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Filesystem capacity — all 3 nodes</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node storage ==="',
+        '  ssh $node "df -h /scratch /tmp /home 2>/dev/null"',
+        'done',
+        '',
+        '# Alert threshold: /scratch > 85%',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  PCT=$(ssh $node "df /scratch | tail -1 | tr -s " " | cut -d" " -f5 | tr -d %")',
+        '  [ "${PCT:-0}" -gt 85 ] && echo "WARNING: $node /scratch at ${PCT}%"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NVMe drive health via SMART data</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node NVMe SMART ==="',
+        '  ssh $node "for dev in /dev/nvme[0-9]; do',
+        '    echo -n \"  $dev: \"',
+        '    nvme smart-log $dev 2>/dev/null \\',
+        '      | grep -E \"critical_warning|media_errors|percentage_used\" | tr \'\n\' \' \'',
+        '    echo',
+        '  done"',
+        'done',
+        '',
+        '# critical_warning != 0  = drive has a hardware fault',
+        '# media_errors > 0       = data errors, monitor closely',
+        '# percentage_used > 90   = drive nearing end of write endurance',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NVMe IOPS and throughput benchmark (run monthly or after issues)</p>',
+      cmd([
+        '# Quick fio benchmark on scratch — verify expected performance:',
+        'ssh xe9680-01 "fio --name=seq_read --rw=read --bs=1M \\',
+        '  --size=10G --numjobs=8 --iodepth=32 --direct=1 \\',
+        '  --filename=/scratch/fio_test --runtime=30 --time_based \\',
+        '  --output-format=terse 2>/dev/null | head -3',
+        '',
+        '# Expected for U.2 NVMe: > 6,000 MB/s seq read per drive',
+        '# If < 2,000 MB/s = drive degraded or RAID misconfiguration',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xs2', label: '2. NVMe SMART Weekly', pri: 'p2',
+    title: 'Weekly: NVMe Drive SMART Audit & Wear Tracking',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">NVMe drives in AI training clusters wear faster than typical enterprise workloads due to continuous high-bandwidth writes (checkpointing, gradient stores). Track percentage_used weekly.</p>',
+      cmd([
+        '#!/bin/bash',
+        '# Weekly NVMe wear audit — all nodes',
+        'echo "=== NVMe Wear Report $(date +%Y-%m-%d) ==="',
+        '',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo ""',
+        '  echo "--- $node ---"',
+        '  ssh $node "nvme list 2>/dev/null | grep /dev/nvme"',
+        '  for dev in $(ssh $node "ls /dev/nvme[0-9]n1 2>/dev/null"); do',
+        '    PCT=$(ssh $node "nvme smart-log $dev 2>/dev/null | grep percentage_used | cut -d: -f2 | tr -d \\" %\\"")',
+        '    ERR=$(ssh $node "nvme smart-log $dev 2>/dev/null | grep media_errors | cut -d: -f2 | tr -d \\" \\"")',
+        '    WARN=$(ssh $node "nvme smart-log $dev 2>/dev/null | grep critical_warning | cut -d: -f2 | tr -d \\" \\"")',
+        '    echo "  $dev: ${PCT}% used, media_errors=${ERR}, warning=${WARN}"',
+        '  done',
+        'done',
+        '',
+        '# Log to file for trend tracking:',
+        '# > /opt/reports/nvme/nvme_wear_$(date +%Y%m%d).txt',
+      ]),
+      '<div class="note"><strong>Action thresholds:</strong><br>percentage_used > 80% = plan replacement in next maintenance window<br>percentage_used > 95% = replace immediately — drive failure imminent<br>media_errors > 0 = investigate immediately, back up any critical data<br>critical_warning != 0 = P1, drain node, replace drive</div>',
+    ].join(''); }
+  },
+  {
+    id: 'xs3', label: '3. NFS Shared Storage', pri: 'p2',
+    title: 'NFS Shared Storage — Mount Health & Performance',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      alert_('purple', '3-node storage architecture',
+        'Local NVMe scratch = hot training data (per-node, ephemeral, ~15-150 TB). NFS = home directories, datasets, model checkpoints (shared, backed up, slower). MinIO = MLflow artifacts, S3-compatible object store. At 3 nodes this is optimal — no Lustre/BeeGFS needed.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NFS mount health — all 3 nodes</p>',
+      cmd([
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node NFS mounts ==="',
+        '  ssh $node "mount | grep nfs"',
+        '  ssh $node "df -h | grep -E \'/home|/datasets|/models\'"',
+        'done',
+        '',
+        '# Check for stale NFS mounts (hung NFS = all IO on that node hangs):',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo -n "$node NFS stat: "',
+        '  timeout 5 ssh $node "stat /home >/dev/null 2>&1 && echo OK || echo STALE/HUNG"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NFS performance check (verify not bottlenecking jobs)</p>',
+      cmd([
+        '# Quick NFS throughput test from each node:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node NFS write throughput ==="',
+        '  ssh $node "dd if=/dev/zero of=/home/nfs_test_$node bs=1M count=1024 \\',
+        '    conv=fdatasync 2>&1 | tail -1"',
+        '  ssh $node "rm -f /home/nfs_test_$node"',
+        'done',
+        '',
+        '# Expected: > 500 MB/s for 10GbE NFS, > 2,000 MB/s for 25GbE',
+        '# If < 100 MB/s = NFS server bottleneck or network issue',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">NFS mount options — verify optimised for HPC</p>',
+      cmd([
+        '# Check NFS mount options (from /etc/fstab or mount output):',
+        'ssh xe9680-01 "cat /etc/fstab | grep nfs"',
+        '',
+        '# Recommended NFS mount options for AI/HPC workloads:',
+        '# nfs-server:/home /home nfs4 \\',
+        '#   rw,hard,intr,rsize=1048576,wsize=1048576,\\',
+        '#   timeo=600,retrans=5,nconnect=8 0 0',
+        '',
+        '# Key options explained:',
+        '# hard       = retry indefinitely (never silently drop IO)',
+        '# rsize/wsize=1048576 = 1MB read/write chunks (max throughput)',
+        '# nconnect=8 = 8 parallel TCP connections (Linux 5.3+, 3-8x throughput)',
+        '# intr       = allow signals to interrupt stuck NFS calls',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xs4', label: '4. Scratch Policy & Cleanup', pri: 'p3',
+    title: 'Scratch Filesystem Policy — Quotas, Cleanup & Purge Automation',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Per-user scratch usage report</p>',
+      cmd([
+        '# Per-user usage on each node (local NVMe scratch is per-node):',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node /scratch usage by user ==="',
+        '  ssh $node "du -sh /scratch/*/ 2>/dev/null | sort -rh | head -15"',
+        'done',
+        '',
+        '# Combined across all nodes (sorted by total):',
+        'for user in $(ls /scratch 2>/dev/null); do',
+        '  TOTAL=0',
+        '  for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '    SIZE=$(ssh $node "du -s /scratch/$user 2>/dev/null | cut -f1")',
+        '    TOTAL=$((TOTAL + ${SIZE:-0}))',
+        '  done',
+        '  echo "$TOTAL $user"',
+        'done | sort -rn | head -20',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Find and notify owners of large stale files</p>',
+      cmd([
+        '# Files on /scratch older than 30 days, larger than 5GB:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "=== $node stale files ==="',
+        '  ssh $node "find /scratch -maxdepth 3 -atime +30 -size +5G \\',
+        '    -printf \'%s %u %p\n\' 2>/dev/null \\',
+        '    | sort -rn | head -10 \\',
+        '    | sort -rh | head -10"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Automated purge policy (Slurm epilog approach)</p>',
+      cmd([
+        '# Add to Slurm epilog script (/etc/slurm/epilog.sh):',
+        '# Automatically move job outputs to NFS after job completion',
+        '',
+        'cat << \'EOF\' > /etc/slurm/epilog.sh',
+        '#!/bin/bash',
+        '# Auto-archive job outputs from local scratch to NFS home',
+        'JOB_SCRATCH="/scratch/${SLURM_JOB_USER}/job_${SLURM_JOB_ID}"',
+        'NFS_ARCHIVE="/home/${SLURM_JOB_USER}/completed_jobs/"',
+        '',
+        'if [ -d "$JOB_SCRATCH" ] && [ "$(du -s $JOB_SCRATCH | cut -f1)" -lt "10485760" ]; then',
+        '  # Auto-archive if job dir < 10GB',
+        '  mkdir -p "$NFS_ARCHIVE"',
+        '  rsync -a "$JOB_SCRATCH/" "$NFS_ARCHIVE/job_${SLURM_JOB_ID}/"',
+        'fi',
+        'EOF',
+        'chmod +x /etc/slurm/epilog.sh',
+        '',
+        '# Register in slurm.conf:',
+        '# Epilog=/etc/slurm/epilog.sh',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xs5', label: '5. MinIO Object Store', pri: 'p3',
+    title: 'MinIO — MLflow Artifact Store & S3-Compatible Object Storage',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      alert_('purple', 'MinIO on 3-node XE9680',
+        'MinIO provides S3-compatible object storage for MLflow experiment artifacts, model checkpoints, and dataset versioning. Deploy as a single-node MinIO on a dedicated VM or on one XE9680 node\'s local NVMe. Free, open-source, no licensing cost.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">MinIO health check</p>',
+      cmd([
+        '# MinIO server status:',
+        'mc admin info minio-server 2>/dev/null || \\',
+        '  curl -s http://minio-server:9000/minio/health/live && echo "MinIO OK"',
+        '',
+        '# Bucket usage:',
+        'mc du minio-server/mlflow-artifacts --depth 1',
+        'mc du minio-server/model-registry --depth 1',
+        '',
+        '# Check disk usage on MinIO backend:',
+        'ssh minio-server "df -h /data/minio"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">MinIO setup for MLflow integration</p>',
+      cmd([
+        '# Set MLflow to use MinIO as artifact store:',
+        'export MLFLOW_S3_ENDPOINT_URL=http://minio-server:9000',
+        'export AWS_ACCESS_KEY_ID=minioadmin',
+        'export AWS_SECRET_ACCESS_KEY=$MINIO_PASS',
+        'export MLFLOW_TRACKING_URI=http://mlflow-server:5000',
+        '',
+        '# In MLflow server startup:',
+        'mlflow server \\',
+        '  --backend-store-uri postgresql://mlflow:$PG_PASS@pg-server/mlflow \\',
+        '  --default-artifact-root s3://mlflow-artifacts/ \\',
+        '  --host 0.0.0.0 --port 5000',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Weekly: clean up old MLflow experiments</p>',
+      cmd([
+        '# List experiments older than 90 days:',
+        'mlflow experiments list --view all 2>/dev/null \\',
+        '  | head -20',
+        '',
+        '# Archive old experiment artifacts from MinIO:',
+        'mc ls minio-server/mlflow-artifacts/ --recursive \\',
+        '  | sort | head -20',
+        '',
+        '# Set lifecycle policy to auto-expire old artifacts (> 90 days):',
+        'mc ilm add minio-server/mlflow-artifacts \\',
+        '  --expiry-days 90 --prefix "old-experiments/"',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xs6', label: '6. Storage Runbook — Issues', pri: 'p2',
+    title: 'Runbook: Storage Issue Response (XE9680)',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Scenario A — NVMe drive failure (critical_warning or media_errors)</p>',
+      '<ol class="step-list">'
+      + [
+        'Identify the failed drive and affected node via SMART data'
+          + cmd(['ssh xe9680-01 "nvme smart-log /dev/nvme2 | grep -E \'critical|media|percentage\'"']),
+        'Drain the node from Slurm immediately — do not wait for jobs'
+          + cmd(['scontrol update nodename=xe9680-01 state=drain reason="NVMe_fault_$(date +%Y%m%d)"']),
+        'Check iDRAC9 SEL for drive fault event'
+          + cmd(['ipmitool -H xe9680-01-bmc -U root -P $IDRAC_PASS sel elist | grep -i "nvme\\|disk\\|storage"']),
+        'Confirm drive is identified by iDRAC hardware inventory'
+          + cmd(['racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS hwinventory Storage']),
+        'Open Dell SupportAssist P1 ticket — NVMe drives are hot-swap on XE9680'
+          + cmd(['racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS techsupreport collect -t SysInfo,HWData']),
+        'After drive replacement, recreate filesystem and test SMART'
+          + cmd(['mkfs.xfs /dev/nvme2n1  # Recreate filesystem after replacement', 'mount /dev/nvme2n1 /scratch/nvme2', 'nvme smart-log /dev/nvme2 | grep critical_warning  # Must be 0']),
+      ].map(l => '<li>' + l + '</li>').join('')
+      + '</ol>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Scenario B — Stale NFS mount (all IO hangs)</p>',
+      '<ol class="step-list">'
+      + [
+        'Identify hung NFS mount'
+          + cmd(['# Timeout-based check to avoid waiting forever:', 'timeout 5 ls /home && echo "OK" || echo "NFS HUNG"']),
+        'Unmount forcefully and remount'
+          + cmd(['sudo umount -l /home  # Lazy unmount — detaches immediately', 'sudo mount -a       # Remount from /etc/fstab']),
+        'If NFS server is down — check network and NFS server health'
+          + cmd(['ping nfs-server -c 3', 'ssh nfs-server "systemctl status nfs-server"', 'ssh nfs-server "exportfs -v"']),
+        'Resume Slurm node after NFS is restored and verified'
+          + cmd(['timeout 5 ls /home && scontrol update nodename=xe9680-01 state=resume']),
+      ].map(l => '<li>' + l + '</li>').join('')
+      + '</ol>',
+    ].join(''); }
+  },
+],
+
+backup_xe: [
+  {
+    id: 'xb1', label: '1. Backup Priority Overview', pri: 'p4',
+    title: 'Backup Layers — What Gets Backed Up and How',
+    html: function() { return [
+      '<span class="pri-label pri-p4">Reference</span>',
+      alert_('purple', 'XE9680 backup is multi-layer — hardware config, OS state, scheduler, MLOps data, and user data all require different approaches',
+        'Local NVMe /scratch is ephemeral by design — never backed up. Everything else has a defined backup target and frequency. The most commonly missed item is the Slurm accounting database (MySQL) — operators back up state files but forget the DB.'),
+      '<table class="tbl"><thead><tr><th>Data Layer</th><th>Tool</th><th>Frequency</th><th>Target</th><th>RTO</th></tr></thead><tbody>'
+      + [
+        ['iDRAC9/BIOS config (SCP)','Redfish API','Monthly','/nfs/backups/idrac/','~10 min'],
+        ['OS /etc + munge key','tar / Ansible','Weekly','/nfs/backups/node-configs/','~30 min'],
+        ['Slurm controller state','rsync','Daily','/nfs/backups/slurm/ctld/','~5 min'],
+        ['Slurm accounting DB','mysqldump','Daily','/nfs/backups/slurm/','~15 min'],
+        ['MLflow metadata (PostgreSQL)','pg_dump','Daily','/nfs/backups/mlflow/','~10 min'],
+        ['MLflow artifacts (MinIO)','mc mirror','Daily','/nfs/backups/mlflow-artifacts/','Varies'],
+        ['Model checkpoints','User policy (rsync to NFS)','Per job','/home/ or MinIO','N/A'],
+        ['Local NVMe /scratch','NOT BACKED UP — ephemeral','—','—','N/A'],
+        ['NFS server data','ZFS snapshots / vendor backup','Daily','Offsite / tape','Varies'],
+      ].map(([d,t,f,tgt,r],i) => '<tr><td><strong>' + d + '</strong></td><td>' + t + '</td><td>' + f + '</td><td><code style="font-size:10px">' + tgt + '</code></td><td>' + r + '</td></tr>').join('')
+      + '</tbody></table>',
+      '<div class="note"><strong>Most common gap in HPC clusters:</strong> Slurm accounting DB (MySQL/MariaDB) is missed — operators back up slurmctld state files but not the slurmdbd database, losing all historical job records. Ensure both are in the daily cron.</div>',
+    ].join(''); }
+  },
+  {
+    id: 'xb2', label: '2. iDRAC9/BIOS Config Backup', pri: 'p2',
+    title: 'iDRAC9 Server Configuration Profile — Backup & Restore',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important — Monthly</span>',
+      alert_('blue', 'Critical after motherboard swap',
+        'The SCP (Server Configuration Profile) captures BIOS, boot order, PCIe slot config, NIC settings, and iDRAC network in one XML file. If a motherboard is replaced, importing the SCP restores the full server configuration in one operation — without manually clicking through BIOS menus.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Backup — export SCP via Redfish API</p>',
+      cmd([
+        '# Export full SCP for all 3 nodes:',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  BMC=${node}-bmc',
+        '  FILE=/nfs/backups/idrac/${node}_scp_$(date +%Y%m%d).xml',
+        '  curl -sk -u root:$IDRAC_PASS \\',
+        '    -X POST \\',
+        '    -H "Content-Type: application/json" \\',
+        '    -d \'{"ExportFormat":"XML","ExportUse":"Default","ShareParameters":{"Target":"ALL","ShareType":"Local"}}\' \\',
+        '    https://$BMC/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/DellManager.ExportSystemProfile \\',
+        '    -o $FILE',
+        '  echo "$node SCP saved: $FILE"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Restore — import SCP after motherboard replacement</p>',
+      cmd([
+        '# Import SCP back to a rebuilt or replaced node:',
+        'SCP_CONTENT=$(cat /nfs/backups/idrac/xe9680-01_scp_YYYYMMDD.xml)',
+        'curl -sk -u root:$IDRAC_PASS \\',
+        '  -X POST \\',
+        '  -H "Content-Type: application/json" \\',
+        '  -d "{\\"ImportBuffer\\":\\"${SCP_CONTENT}\\",\\"ShutdownType\\":\\"Graceful\\",\\"ShareParameters\\":{\\"Target\\":\\"ALL\\",\\"ShareType\\":\\"Local\\"}}" \\',
+        '  https://xe9680-01-bmc/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Oem/DellManager.ImportSystemProfile',
+        '',
+        '# Monitor import job status:',
+        'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS jobqueue view',
+        '# Wait for JobStatus=Completed before rebooting',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb3', label: '3. OS Config & Munge Key', pri: 'p2',
+    title: 'OS Configuration & Munge Key Backup',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important — Weekly</span>',
+      alert_('amber', 'Munge key is the most critical OS-level backup',
+        'Slurm authentication is based on a shared munge key that must be identical across all cluster nodes. If a node is rebuilt without the correct munge key, it cannot join the cluster. Back this up separately from everything else.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Backup /etc and munge key — all 3 nodes</p>',
+      cmd([
+        '#!/bin/bash',
+        '# Weekly OS config backup',
+        'BACKUP_DIR=/nfs/backups/node-configs',
+        'DATE=$(date +%Y%m%d)',
+        '',
+        'for node in xe9680-01 xe9680-02 xe9680-03; do',
+        '  echo "Backing up $node..."',
+        '',
+        '  # Munge key (Slurm auth — CRITICAL):',
+        '  ssh $node "sudo cat /etc/munge/munge.key" \\',
+        '    > $BACKUP_DIR/munge/${node}_munge_${DATE}.key',
+        '  chmod 400 $BACKUP_DIR/munge/${node}_munge_${DATE}.key',
+        '',
+        '  # /etc directory (Slurm config, NFS mounts, cron, OFED):',
+        '  ssh $node "sudo tar czf - /etc/slurm /etc/munge /etc/fstab \\',
+        '    /etc/hosts /etc/cron.d /etc/modules-load.d 2>/dev/null" \\',
+        '    > $BACKUP_DIR/${node}_etc_${DATE}.tar.gz',
+        '',
+        '  # Installed package list (for rebuild reference):',
+        '  ssh $node "dpkg --get-selections" \\',
+        '    > $BACKUP_DIR/${node}_packages_${DATE}.txt',
+        '',
+        '  echo "$node backup complete"',
+        'done',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Restore munge key to a rebuilt node</p>',
+      cmd([
+        '# On rebuilt node — restore munge key and restart:',
+        'NODE=xe9680-01',
+        'scp /nfs/backups/node-configs/munge/${NODE}_munge_latest.key \\',
+        '  root@$NODE:/etc/munge/munge.key',
+        'ssh $NODE "sudo chown munge:munge /etc/munge/munge.key"',
+        'ssh $NODE "sudo chmod 400 /etc/munge/munge.key"',
+        'ssh $NODE "sudo systemctl restart munge"',
+        'ssh $NODE "sudo systemctl restart slurmd"',
+        '',
+        '# Verify munge auth works:',
+        'ssh $NODE "munge -n | unmunge"',
+        '# Should return Status: Success',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb4', label: '4. Slurm State & Accounting DB', pri: 'p1',
+    title: 'Slurm Controller State & Accounting Database Backup',
+    html: function() { return [
+      '<span class="pri-label pri-p1">P1 Critical — Daily</span>',
+      alert_('red', 'Two separate backups required — state files AND the database',
+        'slurmctld state files contain the live job queue and node state. The slurmdbd MySQL database contains all historical accounting. Losing the DB means losing all job history, fairshare data, and SLA reporting data permanently.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Daily backup — slurmctld state + slurmdbd database</p>',
+      cmd([
+        '#!/bin/bash',
+        '# Daily Slurm backup — run from cron on slurm controller',
+        '# cron: 0 2 * * * /opt/scripts/slurm_backup.sh',
+        '',
+        'BACKUP=/nfs/backups/slurm',
+        'DATE=$(date +%Y%m%d)',
+        '',
+        '# 1. slurmctld state directory (job queue, node state):',
+        'rsync -a /var/spool/slurm/ctld/ $BACKUP/ctld_${DATE}/',
+        '',
+        '# 2. slurmdbd accounting database (job history, fairshare):',
+        'mysqldump -u slurm -p$SLURM_DB_PASS slurm_acct_db \\',
+        '  | gzip > $BACKUP/slurmdbd_${DATE}.sql.gz',
+        '',
+        '# 3. Slurm config files:',
+        'tar czf $BACKUP/slurm_conf_${DATE}.tar.gz \\',
+        '  /etc/slurm/ /etc/munge/',
+        '',
+        '# 4. Prune backups older than 30 days:',
+        'find $BACKUP -name "slurmdbd_*.sql.gz" -mtime +30 -delete',
+        'find $BACKUP -maxdepth 1 -name "ctld_*" -type d -mtime +7 \\',
+        '  -exec rm -rf {} +',
+        '',
+        'echo "Slurm backup complete: $(date)"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Restore slurmctld after controller failure</p>',
+      cmd([
+        '# Step 1: Restore state files:',
+        'rsync -a /nfs/backups/slurm/ctld_YYYYMMDD/ /var/spool/slurm/ctld/',
+        'chown -R slurm:slurm /var/spool/slurm/',
+        '',
+        '# Step 2: Start slurmctld in recovery mode:',
+        'slurmctld -R   # -R = recover from state files',
+        '# Or: systemctl start slurmctld',
+        '# slurmctld automatically reads state on start',
+        '',
+        '# Step 3: Verify jobs and nodes recovered:',
+        'sinfo -Nel',
+        'squeue | head -20',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Restore slurmdbd accounting database</p>',
+      cmd([
+        '# Stop slurmdbd first:',
+        'systemctl stop slurmdbd',
+        '',
+        '# Restore database:',
+        'gunzip < /nfs/backups/slurm/slurmdbd_YYYYMMDD.sql.gz \\',
+        '  | mysql -u slurm -p$SLURM_DB_PASS slurm_acct_db',
+        '',
+        '# Restart slurmdbd:',
+        'systemctl start slurmdbd',
+        '',
+        '# Verify accounting is working:',
+        'sacct --starttime=now-1day --format=JobID,User,State | head -10',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb5', label: '5. MLflow & MinIO', pri: 'p2',
+    title: 'MLflow Metadata (PostgreSQL) & MinIO Artifact Backup',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important — Daily</span>',
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Daily MLflow PostgreSQL backup</p>',
+      cmd([
+        '#!/bin/bash',
+        '# Daily MLflow DB backup',
+        '# cron: 30 2 * * * /opt/scripts/mlflow_backup.sh',
+        '',
+        'BACKUP=/nfs/backups/mlflow',
+        'DATE=$(date +%Y%m%d)',
+        '',
+        '# PostgreSQL dump (MLflow experiment metadata, run history):',
+        'pg_dump -U mlflow mlflow \\',
+        '  | gzip > $BACKUP/mlflow_db_${DATE}.sql.gz',
+        '',
+        '# Keep 30 days of DB backups:',
+        'find $BACKUP -name "mlflow_db_*.sql.gz" -mtime +30 -delete',
+        '',
+        'echo "MLflow DB backup complete: $(date)"',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Daily MinIO artifact mirror (incremental)</p>',
+      cmd([
+        '# Mirror MinIO buckets to NFS (only copies new/changed objects):',
+        'mc mirror minio-server/mlflow-artifacts \\',
+        '  /nfs/backups/mlflow-artifacts/ --overwrite',
+        '',
+        'mc mirror minio-server/model-registry \\',
+        '  /nfs/backups/model-registry/ --overwrite',
+        '',
+        '# Check mirror status and size:',
+        'du -sh /nfs/backups/mlflow-artifacts/',
+        'du -sh /nfs/backups/model-registry/',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Restore MLflow after failure</p>',
+      cmd([
+        '# Restore PostgreSQL:',
+        'psql -U mlflow -c "DROP DATABASE IF EXISTS mlflow;"',
+        'psql -U mlflow -c "CREATE DATABASE mlflow;"',
+        'gunzip < /nfs/backups/mlflow/mlflow_db_YYYYMMDD.sql.gz \\',
+        '  | psql -U mlflow mlflow',
+        '',
+        '# Restore MinIO artifacts:',
+        'mc mirror /nfs/backups/mlflow-artifacts/ \\',
+        '  minio-server/mlflow-artifacts/ --overwrite',
+        '',
+        '# Verify MLflow can see experiments:',
+        'mlflow experiments list 2>/dev/null | head -10',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb6', label: '6. User Data Policy', pri: 'p3',
+    title: 'User Data Policy — Checkpoints, Scratch & MOTD',
+    html: function() { return [
+      '<span class="pri-label pri-p3">P3 Routine</span>',
+      alert_('amber', '/scratch is NOT backed up — users must be clearly told this',
+        'The most common support ticket in HPC is "I lost my data on /scratch". The RE\'s job is to set the policy clearly, enforce it via MOTD and Slurm epilog, and refuse to take responsibility for data left on local NVMe.'),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">MOTD — warn users on every login</p>',
+      cmd([
+        'cat << \'EOF\' | sudo tee /etc/motd',
+        '╔══════════════════════════════════════════════════════════╗',
+        '║              STORAGE POLICY — READ CAREFULLY             ║',
+        '╠══════════════════════════════════════════════════════════╣',
+        '║  /scratch  LOCAL NVMe — NOT backed up                   ║',
+        '║            Files > 30 days auto-purged without notice    ║',
+        '║                                                          ║',
+        '║  /home     NFS — backed up nightly. Use for:            ║',
+        '║            - Final model checkpoints                     ║',
+        '║            - Job outputs you need to keep                ║',
+        '║                                                          ║',
+        '║  MinIO     s3://model-registry — for large models       ║',
+        '╚══════════════════════════════════════════════════════════╝',
+        'EOF',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Slurm epilog — auto-archive small job outputs to NFS</p>',
+      cmd([
+        'cat << \'EOF\' > /etc/slurm/epilog.sh',
+        '#!/bin/bash',
+        '# Auto-archive job outputs from local scratch to NFS on job completion',
+        'JOB_SCRATCH="/scratch/${SLURM_JOB_USER}/job_${SLURM_JOB_ID}"',
+        'NFS_ARCHIVE="/home/${SLURM_JOB_USER}/completed_jobs"',
+        '',
+        '# Only archive if job dir exists and is under 10GB:',
+        'if [ -d "$JOB_SCRATCH" ]; then',
+        '  SIZE=$(du -s "$JOB_SCRATCH" 2>/dev/null | cut -f1)',
+        '  if [ "${SIZE:-0}" -lt 10485760 ]; then',
+        '    mkdir -p "$NFS_ARCHIVE"',
+        '    rsync -a "$JOB_SCRATCH/" "$NFS_ARCHIVE/job_${SLURM_JOB_ID}/" 2>/dev/null',
+        '  fi',
+        'fi',
+        'EOF',
+        'chmod +x /etc/slurm/epilog.sh',
+        '# Add to slurm.conf: Epilog=/etc/slurm/epilog.sh',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Recommended user checkpoint pattern to share</p>',
+      cmd([
+        '# Share this pattern with users for PyTorch training jobs:',
+        '',
+        '# In training script — save checkpoints to NFS not scratch:',
+        '# CHECKPOINT_DIR = f"/home/{os.environ[\'USER\']}/checkpoints/{run_name}"',
+        '# os.makedirs(CHECKPOINT_DIR, exist_ok=True)',
+        '',
+        '# Save every N steps:',
+        '# if step % checkpoint_interval == 0:',
+        '#     torch.save({',
+        '#         "step": step,',
+        '#         "model_state_dict": model.state_dict(),',
+        '#         "optimizer_state_dict": optimizer.state_dict(),',
+        '#     }, f"{CHECKPOINT_DIR}/step_{step}.pt")',
+        '',
+        '# MLflow checkpoint logging:',
+        '# mlflow.log_artifact(f"{CHECKPOINT_DIR}/step_{step}.pt")',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb7', label: '7. Daily Backup Cron', pri: 'p2',
+    title: 'Complete Daily Backup Cron Schedule',
+    html: function() { return [
+      '<span class="pri-label pri-p2">P2 Important</span>',
+      '<p style="font-size:12px;margin-bottom:8px;">All backup scripts run from the Slurm controller / management node via cron. Stagger start times to avoid NFS saturation.</p>',
+      cmd([
+        '# /etc/cron.d/cluster-backups on the management/controller node:',
+        '',
+        '# 02:00 — Slurm state + accounting DB:',
+        '0 2 * * * root /opt/scripts/slurm_backup.sh >> /var/log/backups.log 2>&1',
+        '',
+        '# 02:30 — MLflow PostgreSQL:',
+        '30 2 * * * root /opt/scripts/mlflow_backup.sh >> /var/log/backups.log 2>&1',
+        '',
+        '# 03:00 — MinIO artifact mirror (can be slow for large artifact stores):',
+        '0 3 * * * root mc mirror minio-server/mlflow-artifacts /nfs/backups/mlflow-artifacts/ --overwrite >> /var/log/backups.log 2>&1',
+        '',
+        '# 03:30 — MinIO model registry mirror:',
+        '30 3 * * * root mc mirror minio-server/model-registry /nfs/backups/model-registry/ --overwrite >> /var/log/backups.log 2>&1',
+        '',
+        '# Weekly (Sunday 01:00) — OS /etc + munge key:',
+        '0 1 * * 0 root /opt/scripts/os_config_backup.sh >> /var/log/backups.log 2>&1',
+        '',
+        '# Monthly (1st of month 01:00) — iDRAC9 SCP export:',
+        '0 1 1 * * root /opt/scripts/idrac_scp_backup.sh >> /var/log/backups.log 2>&1',
+      ]),
+      '<p style="font-size:12px;font-weight:600;margin:10px 0 6px;">Daily backup verification — check logs every morning</p>',
+      cmd([
+        '# Check last night\'s backup status (add to morning routine):',
+        'grep -E "complete|ERROR|FAIL" /var/log/backups.log \\',
+        '  | grep "$(date -d yesterday +%Y-%m-%d)" | tail -20',
+        '',
+        '# Check backup sizes are reasonable (not suspiciously small):',
+        'ls -lh /nfs/backups/slurm/slurmdbd_$(date -d yesterday +%Y%m%d).sql.gz',
+        'ls -lh /nfs/backups/mlflow/mlflow_db_$(date -d yesterday +%Y%m%d).sql.gz',
+        '',
+        '# Check NFS backup volume has enough space:',
+        'df -h /nfs/backups',
+      ]),
+    ].join(''); }
+  },
+  {
+    id: 'xb8', label: '8. Restore Runbook', pri: 'p1',
+    title: 'Full Node Rebuild & Restore Runbook',
+    html: function() { return [
+      '<span class="pri-label pri-p1">P1 Critical Reference</span>',
+      alert_('red', 'Full node rebuild order — sequence matters',
+        'If a node requires a full OS rebuild (motherboard swap, boot drive failure, OS corruption), follow this exact sequence. Skipping steps or doing them out of order will result in Slurm auth failures or missing GPU config.'),
+      '<ol class="step-list">'
+      + [
+        '<strong>Install base OS</strong> — Ubuntu 22.04 LTS (match other nodes exactly). Get service tag from iDRAC before wiping.'
+          + cmd(['# Boot from PXE or USB. Standard Ubuntu 22.04 server install.', '# Hostname must match exactly: xe9680-01, xe9680-02, or xe9680-03']),
+        '<strong>Install NVIDIA driver + CUDA</strong> — must match other nodes'
+          + cmd([
+            '# Match exact driver version on other nodes:',
+            'apt-get install -y nvidia-driver-570-server cuda-toolkit-12-4',
+            'reboot',
+            '# Verify: nvidia-smi -L  # Should show 8x A100',
+          ]),
+        '<strong>Install DOCA-OFED</strong> — IB fabric connectivity'
+          + cmd([
+            'bash doca_host_repo_*.sh install --profile=doca-ofed',
+            '# Verify: ibstat | grep State  # Should show Active after reboot',
+          ]),
+        '<strong>Restore munge key</strong> — CRITICAL before Slurm install'
+          + cmd([
+            'mkdir -p /etc/munge',
+            'cp /nfs/backups/node-configs/munge/xe9680-01_munge_latest.key /etc/munge/munge.key',
+            'chown munge:munge /etc/munge/munge.key && chmod 400 /etc/munge/munge.key',
+            'systemctl enable --now munge',
+            'munge -n | unmunge  # Must return: Status: Success',
+          ]),
+        '<strong>Install and configure Slurm (slurmd)</strong>'
+          + cmd([
+            'apt-get install -y slurmd',
+            '# Restore /etc/slurm/ from backup:',
+            'tar xzf /nfs/backups/node-configs/xe9680-01_etc_latest.tar.gz -C /',
+            'systemctl enable --now slurmd',
+            '# Verify: sinfo -Nel | grep xe9680-01  # Should show IDLE',
+          ]),
+        '<strong>Install nvidia-peermem</strong> — required for GPUDirect RDMA'
+          + cmd([
+            'modprobe nvidia-peermem',
+            'echo "nvidia-peermem" > /etc/modules-load.d/nvidia-peermem.conf',
+            '# Verify: cat /proc/driver/nvidia-peermem/status  # = ok',
+          ]),
+        '<strong>Restore iDRAC9/BIOS SCP</strong> — restores BIOS GPU settings, PCIe config, SR-IOV'
+          + cmd([
+            '# Import SCP (see xb2 section for full Redfish command)',
+            'racadm -r xe9680-01-bmc -u root -p $IDRAC_PASS jobqueue view',
+            '# Wait for Completed, then reboot',
+          ]),
+        '<strong>Run Ansible playbook</strong> — applies all remaining config (NFS mounts, cron, monitoring)'
+          + cmd([
+            'ansible-playbook site.yml --limit xe9680-01',
+            '# This applies: NFS mounts, DCGM, Prometheus exporters, cron jobs, etc.',
+          ]),
+        '<strong>Run DCGM Level-3 diagnostics</strong> — validate GPU health before production'
+          + cmd([
+            'dcgmi diag -r 3 -j > /tmp/dcgm_rebuild_$(date +%Y%m%d).json',
+            '# Must return: "Overall Result": "Pass"',
+          ]),
+        '<strong>Resume in Slurm</strong> — only after all checks pass'
+          + cmd([
+            'scontrol update nodename=xe9680-01 state=resume',
+            'sinfo -Nel | grep xe9680-01  # Confirm IDLE',
+            '# Submit a test 1-GPU job to validate end-to-end',
+          ]),
+      ].map(l => '<li>' + l + '</li>').join('')
+      + '</ol>',
+      '<div class="note"><strong>Estimated total rebuild time:</strong> 45–90 minutes for OS install + driver + OFED + restore. Add 30 minutes for DCGM Level-3 diagnostics. Full production-ready in approximately 2 hours from bare metal.</div>',
+    ].join(''); }
+  },
+],
+
+};
+
+// ── BUILD UI ──────────────────────────────────────────
+function buildTabBar() {
+  const tb = document.getElementById('tabbar');
+  tb.innerHTML = '';
+  TABS.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'tb' + (curTab === t ? ' active' : '');
+    el.textContent = TAB_LABELS[i];
+    el.onclick = () => showTab(t);
+    tb.appendChild(el);
+  });
+}
+
+function buildSb() {
+  const data = SECTIONS[curTab] || [];
+  const sb = document.getElementById('sb');
+  const sel = document.getElementById('mob-select');
+  sb.innerHTML = '';
+  // Reset mobile dropdown to just the placeholder
+  while(sel.options.length > 1) sel.remove(1);
+
+  if (!data.length) {
+    sb.innerHTML = '<div style="padding:16px;color:var(--gray);font-size:12px">No sections</div>';
+    return;
+  }
+  const priLabels = {p1:'🔴',p2:'🟡',p3:'🟢',p4:'🔵'};
+  data.forEach(item => {
+    // Sidebar item
+    const el = document.createElement('div');
+    el.className = 'sb-item' + (curSec === item.id ? ' active' : '') + (done.has(item.id) ? ' done' : '');
+    el.innerHTML = '<div class="dot ' + item.pri + '"></div><span class="sb-label">' + item.label + '</span>';
+    el.onclick = () => showSec(item.id);
+    sb.appendChild(el);
+    // Mobile dropdown option
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = priLabels[item.pri] + ' ' + item.label + (done.has(item.id) ? ' ✓' : '');
+    if(curSec === item.id) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  updateProg();
+}
+
+function showSec(id) {
+  if(!id) return;
+  const all = Object.values(SECTIONS).flat();
+  const item = all.find(i => i.id === id);
+  if (!item) return;
+  curSec = id;
+  const c = document.getElementById('content');
+  c.innerHTML =
+    '<div class="mark-row">'
+    + '<span class="pri-label pri-' + item.pri + '" style="margin:0">'
+    + ({ p1:'● P1 Critical', p2:'● P2 Important', p3:'● P3 Routine', p4:'● P4 Reference' }[item.pri]) + '</span>'
+    + '<button class="mark-btn' + (done.has(id) ? ' done' : '') + '" onclick="toggleDone(\'' + id + '\')">'
+    + (done.has(id) ? '✓ Reviewed' : 'Mark Reviewed') + '</button>'
+    + '</div>'
+    + '<div class="card"><div class="card-title">' + item.title + '</div>'
+    + item.html()
+    + '</div>';
+  // Wrap any bare .tbl elements in .tbl-wrap for mobile scroll
+  c.querySelectorAll('.tbl').forEach(t => {
+    if(!t.parentElement.classList.contains('tbl-wrap')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tbl-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    }
+  });
+  buildSb();
+  // Sync mobile dropdown
+  const sel = document.getElementById('mob-select');
+  if(sel) sel.value = id;
+}
+
+function showTab(tab) {
+  curTab = tab; curSec = null;
+  buildTabBar();
+  buildSb();
+  document.getElementById('content').innerHTML =
+    '<div class="empty"><p>⚡ Select a section above</p></div>';
+  const sel = document.getElementById('mob-select');
+  if(sel) sel.value = '';
+  // Scroll active tab into view on mobile
+  const activeTab = document.querySelector('.tb.active');
+  if(activeTab) activeTab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+
+function toggleDone(id) {
+  done.has(id) ? done.delete(id) : done.add(id);
+  buildSb();
+  const btn = document.querySelector('.mark-btn');
+  if (btn) {
+    btn.classList.toggle('done', done.has(id));
+    btn.textContent = done.has(id) ? '✓ Reviewed' : 'Mark Reviewed';
+  }
+}
+
+function updateProg() {
+  const total = Object.values(SECTIONS).flat().length;
+  const d = done.size;
+  document.getElementById('dc').textContent = d;
+  document.getElementById('tc').textContent = total;
+  const pct = total > 0 ? Math.round(d / total * 100) : 0;
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('pp').textContent = pct + '%';
+}
+
+function cp(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  }).catch(() => { btn.textContent = 'Error'; });
+}
+
+// ── INIT ──────────────────────────────────────────────
+buildTabBar();
+buildSb();
+updateProg();
+</script>
+</body>
+</html>
